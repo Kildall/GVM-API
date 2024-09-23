@@ -4,7 +4,8 @@
     "@/": "./"
   },
   "tasks": {
-    "start": "deno run --allow-net server.ts"
+    "dev": "deno run -A --watch server.ts",
+    "start": "deno run -A server.ts"
   },
   "compilerOptions": {
     "jsx": "precompile",

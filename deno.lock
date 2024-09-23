@@ -3,11 +3,15 @@
   "packages": {
     "specifiers": {
       "jsr:@hono/hono@^4.6.2": "jsr:@hono/hono@4.6.2",
+      "jsr:@std/dotenv": "jsr:@std/dotenv@0.225.2",
       "npm:prisma": "npm:prisma@5.19.1"
     },
     "jsr": {
       "@hono/hono@4.6.2": {
         "integrity": "35fcf3be4687825080b01bed7bbe2ac66f8d8b8939f0bad459661bf3b46d916f"
+      },
+      "@std/dotenv@0.225.2": {
+        "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
       }
     },
     "npm": {

@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
-import { Env } from "@/api/routes/index.ts";
 
-const auth = new Hono<{ Bindings: Env }>();
+const auth = new Hono();
 
 // Signup route
-auth.post("/auth/signup", async (c) => {
+auth.post("/signup", async (c) => {
     // const { username, password } = await c.req.json();
 
     // Check if user already exists
@@ -26,13 +25,13 @@ auth.post("/auth/signup", async (c) => {
     // users.push(newUser);
 
     // Generate JWT token
-    const token = await sign({ id: 'asd' }, c.env.JWT_SECRET);
+    const token = await sign({ id: 'asd' }, Deno.env.get('JWT_SECRET')!);
 
     return c.json({ message: "User created successfully", token });
 });
 
 // Login route
-auth.post("/auth/login", async (c) => {
+auth.post("/login", async (c) => {
     // const { username, password } = await c.req.json();
     // const user = users.find(u => u.username === username);
 
@@ -41,7 +40,7 @@ auth.post("/auth/login", async (c) => {
     //    return c.json({ message: "Invalid credentials" });
     //}
 
-    const token = await sign({ id: 'asd' }, c.env.JWT_SECRET);
+    const token = await sign({ id: 'asd' }, Deno.env.get('JWT_SECRET')!);
     return c.json({ token });
 });
 
