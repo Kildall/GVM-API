@@ -1,29 +1,13 @@
 {
+  "imports": {
+    "hono": "jsr:@hono/hono@^4.6.2",
+    "@/": "./"
+  },
   "tasks": {
-    "cache": "deno cache --lock-write deps.ts api/server.ts",
-    "dev": "deno run -A --watch api/server.ts",
-    "server": "deno run -A --cached-only api/server.ts"
+    "start": "deno run --allow-net server.ts"
   },
-  "importMap": "./import_map.json",
-  "lock": true,
-  "lint": {
-    "exclude": ["./.github/*"]
-  },
-  "fmt": {
-    "exclude": [
-      ".github/",
-      "coverage/",
-      "**/*.md",
-      "**/*.js",
-      "**/*.css",
-      "**/*.html",
-      "**/*.sh",
-      "**/*.json"
-    ],
-    "useTabs": true,
-    "lineWidth": 120,
-    "indentWidth": 2,
-    "singleQuote": true,
-    "proseWrap": "preserve"
+  "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "hono/jsx"
   }
 }

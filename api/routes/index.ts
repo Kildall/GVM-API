@@ -1,9 +1,27 @@
-import { Application } from 'deps';
-import { authRouter } from 'api/routes/auth/index.ts';
+import { Hono } from "hono";
+import { jwt } from "hono/jwt";
+import type { JwtVariables } from "hono/jwt";
+import { cors } from "hono/cors";
+import { auth } from "@/api/routes/auth/index.ts";
 
-const APP = new Application();
+type Variables = JwtVariables
+export interface Env {
+    JWT_SECRET: string;
+}
 
-APP.use(authRouter.routes());
-APP.use(authRouter.allowedMethods());
+const api = new Hono<{ Variables: Variables, Bindings: Env }>().basePath('/api');
 
-export { APP }
+api.route('/auth/*', auth)
+
+api.use(
+    '/*', (c, next) => {
+        const jwtMiddleware = jwt({
+            secret: c.env.JWT_SECRET,
+        })
+        return jwtMiddleware(c, next)
+    }
+)
+
+api.use('/*', cors())
+
+export { api }
