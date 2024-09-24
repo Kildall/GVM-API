@@ -255,7 +255,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/pedro/projects/GVM-API/generated/client",
+      "value": "/home/pedro/github/GVM-API/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -271,7 +271,7 @@ const config = {
     "previewFeatures": [
       "deno"
     ],
-    "sourceFilePath": "/home/pedro/projects/GVM-API/prisma/schema.prisma",
+    "sourceFilePath": "/home/pedro/github/GVM-API/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -285,6 +285,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -295,7 +296,7 @@ const config = {
   },
   "inlineSchema": "datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  previewFeatures = [\"deno\"]\n  output          = \"../generated/client\"\n  provider        = \"prisma-client-js\"\n}\n\nmodel Cliente {\n  id            Int         @id @default(autoincrement()) @map(\"ClienteId\")\n  nombre        String\n  telefono      String\n  fechaRegistro DateTime\n  direcciones   Direccion[]\n  ventas        Venta[]\n\n  @@map(\"Cliente\")\n}\n\nmodel Compra {\n  id             Int              @id @default(autoincrement()) @map(\"CompraId\")\n  empleadoId     Int\n  distribuidorId Int\n  fecha          DateTime\n  monto          Float\n  descripcion    String\n  empleado       Empleado         @relation(fields: [empleadoId], references: [id])\n  distribuidor   Distribuidor     @relation(fields: [distribuidorId], references: [id])\n  productos      CompraProducto[]\n\n  @@map(\"Compra\")\n}\n\nmodel CompraProducto {\n  compraId   Int\n  productoId Int\n  cantidad   Int\n  compra     Compra   @relation(fields: [compraId], references: [id])\n  producto   Producto @relation(fields: [productoId], references: [id])\n\n  @@id([compraId, productoId])\n  @@map(\"CompraProducto\")\n}\n\nmodel Direccion {\n  id           Int     @id @default(autoincrement()) @map(\"DireccionId\")\n  clienteId    Int\n  calle1       String\n  calle2       String?\n  codigoPostal String\n  provincia    String\n  localidad    String\n  detalle      String?\n  cliente      Cliente @relation(fields: [clienteId], references: [id])\n  envios       Envio[]\n\n  @@map(\"Direccion\")\n}\n\nmodel Distribuidor {\n  id      Int      @id @default(autoincrement()) @map(\"DistribuidorId\")\n  nombre  String\n  compras Compra[]\n\n  @@map(\"Distribuidor\")\n}\n\nmodel Empleado {\n  id      Int      @id @default(autoincrement()) @map(\"EmpleadoId\")\n  nombre  String\n  cargo   String\n  compras Compra[]\n\n  @@map(\"Empleado\")\n}\n\nmodel Envio {\n  id                       Int               @id @default(autoincrement()) @map(\"EnvioId\")\n  ventaId                  Int\n  repartidorId             Int\n  direccionId              Int\n  estado                   Int\n  fechaInicio              DateTime\n  fechaUltimaActualizacion DateTime\n  venta                    Venta             @relation(fields: [ventaId], references: [id])\n  repartidor               Repartidor        @relation(fields: [repartidorId], references: [id])\n  direccion                Direccion         @relation(fields: [direccionId], references: [id])\n  estadoEnvio              EstadoEnvio       @relation(fields: [estado], references: [id])\n  repartidoresEnvios       RepartidorEnvio[]\n\n  @@map(\"Envio\")\n}\n\nmodel EstadoEnvio {\n  id               Int               @id @map(\"EstadoId\")\n  descEstado       String\n  envios           Envio[]\n  repartidorEnvios RepartidorEnvio[]\n\n  @@map(\"EstadoEnvio\")\n}\n\nmodel EstadoVenta {\n  id         Int     @id @map(\"EstadoId\")\n  descEstado String\n  ventas     Venta[]\n\n  @@map(\"EstadoVenta\")\n}\n\nmodel Producto {\n  id       Int              @id @default(autoincrement()) @map(\"ProductoId\")\n  nombre   String\n  cantidad Int\n  medida   Float\n  marca    String\n  precio   Float\n  compras  CompraProducto[]\n  ventas   ProductoVenta[]\n\n  @@map(\"Producto\")\n}\n\nmodel ProductoVenta {\n  ventaId    Int\n  productoId Int\n  cantidad   Int\n  venta      Venta    @relation(fields: [ventaId], references: [id])\n  producto   Producto @relation(fields: [productoId], references: [id])\n\n  @@id([ventaId, productoId])\n  @@map(\"ProductoVenta\")\n}\n\nmodel Repartidor {\n  id           Int               @id @default(autoincrement()) @map(\"RepartidorId\")\n  nombre       String\n  telefono     String\n  envios       RepartidorEnvio[]\n  enviosDirect Envio[]\n\n  @@map(\"Repartidor\")\n}\n\nmodel RepartidorEnvio {\n  repartidorId Int\n  envioId      Int\n  estado       Int\n  repartidor   Repartidor  @relation(fields: [repartidorId], references: [id])\n  envio        Envio       @relation(fields: [envioId], references: [id])\n  estadoEnvio  EstadoEnvio @relation(fields: [estado], references: [id])\n\n  @@id([repartidorId, envioId])\n  @@map(\"RepartidorEnvio\")\n}\n\nmodel Venta {\n  id                       Int             @id @default(autoincrement()) @map(\"VentaId\")\n  clienteId                Int\n  estado                   Int\n  fechaInicio              DateTime\n  fechaUltimaActualizacion DateTime\n  cliente                  Cliente         @relation(fields: [clienteId], references: [id])\n  estadoVenta              EstadoVenta     @relation(fields: [estado], references: [id])\n  productos                ProductoVenta[]\n  envios                   Envio[]\n\n  @@map(\"Venta\")\n}\n\nenum TipoEntidad {\n  Permiso\n  Rol\n}\n\nmodel Entidad {\n  id             Int              @id @default(autoincrement())\n  nombre         String\n  tipo           TipoEntidad\n  entidadUsuario EntidadUsuario[]\n  permisos       Entidad[]        @relation(\"PermisoRol\")\n  roles          Entidad[]        @relation(\"PermisoRol\")\n\n  @@map(\"Entidad\")\n}\n\nmodel EntidadUsuario {\n  usuarioId Int\n  entidadId Int\n  usuario   Usuario @relation(fields: [usuarioId], references: [id])\n  entidad   Entidad @relation(fields: [entidadId], references: [id])\n\n  @@id([usuarioId, entidadId])\n  @@map(\"EntidadUsuario\")\n}\n\nmodel Usuario {\n  id         Int              @id @default(autoincrement()) @map(\"UsuarioId\")\n  nombre     String           @db.VarChar(256)\n  email      String           @db.VarChar(100)\n  clave      String           @db.VarChar(256)\n  habilitado Boolean\n  permisos   EntidadUsuario[]\n\n  @@map(\"Usuario\")\n}\n",
   "inlineSchemaHash": "503bfeaa75afa3f4622f3802693e47350c99156aefe5ca75d03f7d5c1bfa16c9",
-  "copyEngine": true
+  "copyEngine": false
 }
 
 const fs = require('fs')
@@ -331,9 +332,3 @@ const PrismaClient = getPrismaClient(config)
 exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
-// file annotations for bundling tools to include these files
-path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
-path.join(process.cwd(), "generated/client/libquery_engine-debian-openssl-3.0.x.so.node")
-// file annotations for bundling tools to include these files
-path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "generated/client/schema.prisma")

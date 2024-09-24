@@ -1,14 +1,11 @@
-import { Hono } from 'hono'
-import { logger } from 'hono/logger'
+import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { api } from "@/api/routes/index.ts";
-import "jsr:@std/dotenv/load";
 
-const app = new Hono()
+const app = new Hono();
 
-app.use(logger())
+app.use(logger());
 
-app.route('/', api)
+app.route("/", api);
 
-
-
-Deno.serve(app.fetch)
+Deno.serve(app.fetch);
