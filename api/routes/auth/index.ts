@@ -3,7 +3,7 @@ import { prisma } from "@/api/helpers/prisma.ts";
 import { z } from "zod";
 import { generateJWT } from "@/api/helpers/jwt.ts";
 import { sendVerificationEmail } from "@/api/operations/email/send_verification_email.ts";
-import { zValidator } from "@hono/zod-validator";
+import { zValidator } from "@/api/helpers/zvalidator.ts";
 
 const auth = new Hono();
 
@@ -14,16 +14,8 @@ const signupValidationSchema = z.object({
 });
 
 // Signup route
-auth.post("/signup", , async (c) => {
-  const input = await c.req.json();
-
-  const validatedInput = signupValidationSchema.safeParse(input);
-  if (!validatedInput.success) {
-    return c.json({ message: "Invalid parameters" }, 400);
-  }
-
-  const { email, password, name } = validatedInput.data;
-
+auth.post("/signup", zValidator("json", signupValidationSchema), async (c) => {
+  const { email, name, password } = c.req.valid("json");
   // Check if user already exists
   const existingUser = await prisma.usuario.findFirst({
     where: { email: email },
@@ -65,15 +57,8 @@ const loginValidationSchema = z.object({
 });
 
 // Login route
-auth.post("/login", zValidator('json', loginValidationSchema), async (c) => {
-  const input = await c.req.json();
-
-  const validatedInput = loginValidationSchema.safeParse(input);
-  if (!validatedInput.success) {
-    return c.json({ message: "Invalid parameters" }, 400);
-  }
-
-  const { email, password } = validatedInput.data;
+auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
+  const { email, password } = c.req.valid("json");
 
   // Check if user exists
   const existingUser = await prisma.usuario.findFirst({

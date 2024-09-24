@@ -1,5 +1,5 @@
 {
-  "deno.enablePaths": ["./api"],
+  "deno.enablePaths": ["./"],
   "deno.enable": true,
   "deno.lint": true,
   "deno.cacheOnSave": true,

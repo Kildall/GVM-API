@@ -4,8 +4,9 @@
     "specifiers": {
       "jsr:@hono/hono@^4.6.2": "jsr:@hono/hono@4.6.2",
       "jsr:@std/dotenv": "jsr:@std/dotenv@0.224.0",
-      "npm:@hono/zod-validator": "npm:@hono/zod-validator@0.2.2_hono@4.6.3_zod@3.23.8",
+      "npm:@hono/zod-validator@0.2.1": "npm:@hono/zod-validator@0.2.1_hono@4.6.3_zod@3.23.8",
       "npm:mailersend": "npm:mailersend@2.3.0",
+      "npm:prisma@5.19.1": "npm:prisma@5.19.1",
       "npm:prisma@latest": "npm:prisma@5.19.1"
     },
     "jsr": {
@@ -17,8 +18,8 @@
       }
     },
     "npm": {
-      "@hono/zod-validator@0.2.2_hono@4.6.3_zod@3.23.8": {
-        "integrity": "sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==",
+      "@hono/zod-validator@0.2.1_hono@4.6.3_zod@3.23.8": {
+        "integrity": "sha512-HFoxln7Q6JsE64qz2WBS28SD33UB2alp3aRKmcWnNLDzEL1BLsWfbdX6e1HIiUprHYTIXf5y7ax8eYidKUwyaA==",
         "dependencies": {
           "hono": "hono@4.6.3",
           "zod": "zod@3.23.8"
@@ -272,7 +273,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.6.2",
-      "npm:@hono/zod-validator",
+      "npm:@hono/zod-validator@0.2.1",
       "npm:mailersend"
     ],
     "packageJson": {

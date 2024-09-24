@@ -252,7 +252,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/pedro/github/GVM-API/generated/client",
+      "value": "/home/pedro/Repositories/GVM-API/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -268,11 +268,11 @@ const config = {
     "previewFeatures": [
       "deno"
     ],
-    "sourceFilePath": "/home/pedro/github/GVM-API/prisma/schema.prisma",
+    "sourceFilePath": "/home/pedro/Repositories/GVM-API/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
