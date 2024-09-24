@@ -4,6 +4,7 @@
     "specifiers": {
       "jsr:@hono/hono@^4.6.2": "jsr:@hono/hono@4.6.2",
       "jsr:@std/dotenv": "jsr:@std/dotenv@0.224.0",
+      "npm:@hono/zod-validator": "npm:@hono/zod-validator@0.2.2_hono@4.6.3_zod@3.23.8",
       "npm:mailersend": "npm:mailersend@2.3.0",
       "npm:prisma@latest": "npm:prisma@5.19.1"
     },
@@ -16,6 +17,13 @@
       }
     },
     "npm": {
+      "@hono/zod-validator@0.2.2_hono@4.6.3_zod@3.23.8": {
+        "integrity": "sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==",
+        "dependencies": {
+          "hono": "hono@4.6.3",
+          "zod": "zod@3.23.8"
+        }
+      },
       "@prisma/debug@5.19.1": {
         "integrity": "sha512-lAG6A6QnG2AskAukIEucYJZxxcSqKsMK74ZFVfCTOM/7UiyJQi48v6TQ47d6qKG3LbMslqOvnTX25dj/qvclGg==",
         "dependencies": {}
@@ -144,6 +152,10 @@
           "function-bind": "function-bind@1.1.2"
         }
       },
+      "hono@4.6.3": {
+        "integrity": "sha512-0LeEuBNFeSHGqZ9sNVVgZjB1V5fmhkBSB0hZrpqStSMLOWgfLy0dHOvrjbJh0H2khsjet6rbHfWTHY0kpYThKQ==",
+        "dependencies": {}
+      },
       "https-proxy-agent@5.0.1": {
         "integrity": "sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==",
         "dependencies": {
@@ -235,6 +247,10 @@
           "tr46": "tr46@0.0.3",
           "webidl-conversions": "webidl-conversions@3.0.1"
         }
+      },
+      "zod@3.23.8": {
+        "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==",
+        "dependencies": {}
       }
     }
   },
@@ -256,6 +272,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.6.2",
+      "npm:@hono/zod-validator",
       "npm:mailersend"
     ],
     "packageJson": {

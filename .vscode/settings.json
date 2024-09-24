@@ -1,11 +1,8 @@
 {
-  "deno.enablePaths": [
-    "./"
-  ],
+  "deno.enablePaths": ["./api"],
   "deno.enable": true,
   "deno.lint": true,
   "deno.cacheOnSave": true,
-  "editor.inlayHints.enabled": "off",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "denoland.vscode-deno",
   "typescript.format.enable": false,

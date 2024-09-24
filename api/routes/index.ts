@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { jwt } from "hono/jwt";
 import type { JwtVariables } from "hono/jwt";
 import { cors } from "hono/cors";
 import { auth } from "@/api/routes/auth/index.ts";
-import { env } from "@/config/env.ts";
+import { jwt } from "@/api/middlewares/jwt.ts";
+import { bodyValidator } from "@/api/middlewares/body_validator.ts";
 
 type Variables = JwtVariables;
 
@@ -14,24 +14,7 @@ api.use("/*", cors());
 // Custom middleware for selective JWT checking
 api.use(
   "/*",
-  (c, next) => {
-    const path = c.req.path;
-    if (
-      path.startsWith("/api/auth/login") || path.startsWith("/api/auth/signup")
-    ) {
-      // Skip JWT check for login and signup routes
-      return next();
-    }
-
-    const secret = env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT Secret not found");
-    }
-    const jwtMiddleware = jwt({
-      secret,
-    });
-    return jwtMiddleware(c, next);
-  },
+  jwt,
 );
 
 api.route("/auth", auth);

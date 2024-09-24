@@ -2,6 +2,7 @@
   "imports": {
     "hono": "jsr:@hono/hono@^4.6.2",
     "zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
+    "@hono/zod-validator": "npm:@hono/zod-validator",
     "mailersend": "npm:mailersend",
     "@/generated": "./generated",
     "@/": "./"
