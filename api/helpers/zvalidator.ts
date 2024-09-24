@@ -7,6 +7,7 @@ import type {
   ValidationTargets,
 } from "hono";
 import { validator } from "hono/validator";
+import { HTTPException } from "hono/http-exception";
 import type { z, ZodError, ZodSchema } from "zod";
 
 // deno-lint-ignore ban-types
@@ -71,15 +72,14 @@ export const zValidator = <
     }
 
     if (!result.success) {
-      return c.json(
-        result.error.errors.map((x) => {
+      throw new HTTPException(400, {
+        cause: result.error.errors.map((x) => {
           return {
             path: x.path,
             message: x.message,
           };
         }),
-        400,
-      );
+      });
     }
 
     return result.data as z.infer<T>;

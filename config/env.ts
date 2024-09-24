@@ -1,6 +1,7 @@
 import "jsr:@std/dotenv/load";
 
 enum EnvVars {
+  ENVIRONMENT = "ENVIRONMENT",
   DATABASE_URL = "DATABASE_URL",
   JWT_SECRET = "JWT_SECRET",
   MAILERSEND_API_KEY = "MAILERSEND_API_KEY",

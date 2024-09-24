@@ -1,10 +1,11 @@
 {
   "imports": {
-    "hono": "jsr:@hono/hono@^4.6.2",
-    "zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
-    "mailersend": "npm:mailersend",
+    "@/": "./",
     "@/generated": "./generated",
-    "@/": "./"
+    "hono": "jsr:@hono/hono@^4.6.2",
+    "mailersend": "npm:mailersend",
+    "pino": "npm:pino@^9.4.0",
+    "zod": "https://deno.land/x/zod@v3.23.8/mod.ts"
   },
   "tasks": {
     "prisma:generate": "deno run -A npm:prisma@latest generate --no-engine",
