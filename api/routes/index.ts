@@ -6,7 +6,9 @@ import { jwt } from "@/api/middlewares/jwt.ts";
 import logger from "@/api/middlewares/logger.ts";
 import { responseFormatter } from "@/api/middlewares/formatter.ts";
 import { HTTPException } from "hono/http-exception";
-import { APIResponse } from "@/api/types/api.ts";
+import type { APIResponse } from "@/api/types/api.ts";
+import { log } from "@/api/helpers/pino";
+import { APIError } from "@/api/types/errors";
 
 type Variables = JwtVariables;
 
@@ -30,7 +32,7 @@ api.onError((error, c) => {
 
     return c.json(response);
   }
-
+  log.error(error);
   let errorMessage = "An unknown error occurred";
 
   const response: APIResponse = {
@@ -42,7 +44,7 @@ api.onError((error, c) => {
   };
 
   if (error instanceof Error) {
-    errorMessage = error.message;
+    response.status.errors = [error.message]
   }
 
   return c.json(response);

@@ -1,8 +1,25 @@
 {
+  "name": "gvm-api",
+  "module": "server.ts",
+  "type": "module",
+  "scripts": {
+    "prisma:generate": "bunx prisma generate",
+    "prisma:migrate": "bunx prisma migrated dev",
+    "server": "bun run --hot server.ts"
+  },
   "devDependencies": {
-    "prisma": "^5.19.1"
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.1"
+    "@hono/zod-validator": "^0.3.0",
+    "@prisma/client": "^5.20.0",
+    "@types/node": "^22.7.2",
+    "hono": "^4.6.3",
+    "mailersend": "^2.3.0",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
   }
 }

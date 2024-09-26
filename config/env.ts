@@ -1,5 +1,3 @@
-import "jsr:@std/dotenv/load";
-
 enum EnvVars {
   ENVIRONMENT = "ENVIRONMENT",
   DATABASE_URL = "DATABASE_URL",
@@ -15,7 +13,7 @@ function getEnvVars(): ParsedEnvVars {
   const parsedEnvVars: Partial<ParsedEnvVars> = {};
 
   for (const key of Object.values(EnvVars)) {
-    const value = Deno.env.get(key);
+    const value = process.env[key];
     if (value === undefined) {
       throw new Error(`Environment variable ${key} is not defined`);
     }

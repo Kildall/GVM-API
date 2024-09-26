@@ -1,4 +1,4 @@
-import { Usuario } from "@/generated/client/deno/index.d.ts";
+import type { Usuario } from "@prisma/client";
 import { sign } from "hono/jwt";
 import { env } from "@/config/env.ts";
 

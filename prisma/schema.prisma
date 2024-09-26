@@ -1,34 +1,33 @@
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://gvm_owner:k7hs9DOriCeG@ep-odd-cell-a4pzau7u.us-east-1.aws.neon.tech/gvm?sslmode=require"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
-  previewFeatures = ["deno"]
-  output = "../generated/client"
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 model Cliente {
-  id             Int         @id @default(autoincrement()) @map("ClienteId")
-  nombre         String
-  telefono       String
-  fechaRegistro  DateTime
-  direcciones    Direccion[]
-  ventas         Venta[]
+  id            Int         @id @default(autoincrement()) @map("ClienteId")
+  nombre        String
+  telefono      String
+  fechaRegistro DateTime
+  direcciones   Direccion[]
+  ventas        Venta[]
 
   @@map("Cliente")
 }
 
 model Compra {
-  id             Int             @id @default(autoincrement()) @map("CompraId")
+  id             Int              @id @default(autoincrement()) @map("CompraId")
   empleadoId     Int
   distribuidorId Int
   fecha          DateTime
   monto          Float
   descripcion    String
-  empleado       Empleado        @relation(fields: [empleadoId], references: [id])
-  distribuidor   Distribuidor    @relation(fields: [distribuidorId], references: [id])
+  empleado       Empleado         @relation(fields: [empleadoId], references: [id])
+  distribuidor   Distribuidor     @relation(fields: [distribuidorId], references: [id])
   productos      CompraProducto[]
 
   @@map("Compra")
@@ -38,8 +37,8 @@ model CompraProducto {
   compraId   Int
   productoId Int
   cantidad   Int
-  compra     Compra    @relation(fields: [compraId], references: [id])
-  producto   Producto  @relation(fields: [productoId], references: [id])
+  compra     Compra   @relation(fields: [compraId], references: [id])
+  producto   Producto @relation(fields: [productoId], references: [id])
 
   @@id([compraId, productoId])
   @@map("CompraProducto")
@@ -78,26 +77,26 @@ model Empleado {
 }
 
 model Envio {
-  id                      Int           @id @default(autoincrement()) @map("EnvioId")
-  ventaId                 Int
-  repartidorId            Int
-  direccionId             Int
-  estado                  Int
-  fechaInicio             DateTime
+  id                       Int               @id @default(autoincrement()) @map("EnvioId")
+  ventaId                  Int
+  repartidorId             Int
+  direccionId              Int
+  estado                   Int
+  fechaInicio              DateTime
   fechaUltimaActualizacion DateTime
-  venta                   Venta         @relation(fields: [ventaId], references: [id])
-  repartidor              Repartidor    @relation(fields: [repartidorId], references: [id])
-  direccion               Direccion     @relation(fields: [direccionId], references: [id])
-  estadoEnvio             EstadoEnvio   @relation(fields: [estado], references: [id])
-  repartidoresEnvios      RepartidorEnvio[]
+  venta                    Venta             @relation(fields: [ventaId], references: [id])
+  repartidor               Repartidor        @relation(fields: [repartidorId], references: [id])
+  direccion                Direccion         @relation(fields: [direccionId], references: [id])
+  estadoEnvio              EstadoEnvio       @relation(fields: [estado], references: [id])
+  repartidoresEnvios       RepartidorEnvio[]
 
   @@map("Envio")
 }
 
 model EstadoEnvio {
-  id         Int       @id @map("EstadoId")
-  descEstado String
-  envios     Envio[]
+  id               Int               @id @map("EstadoId")
+  descEstado       String
+  envios           Envio[]
   repartidorEnvios RepartidorEnvio[]
 
   @@map("EstadoEnvio")
@@ -136,10 +135,10 @@ model ProductoVenta {
 }
 
 model Repartidor {
-  id        Int               @id @default(autoincrement()) @map("RepartidorId")
-  nombre    String
-  telefono  String
-  envios    RepartidorEnvio[]
+  id           Int               @id @default(autoincrement()) @map("RepartidorId")
+  nombre       String
+  telefono     String
+  envios       RepartidorEnvio[]
   enviosDirect Envio[]
 
   @@map("Repartidor")
@@ -158,15 +157,15 @@ model RepartidorEnvio {
 }
 
 model Venta {
-  id                      Int             @id @default(autoincrement()) @map("VentaId")
-  clienteId               Int
-  estado                  Int
-  fechaInicio             DateTime
+  id                       Int             @id @default(autoincrement()) @map("VentaId")
+  clienteId                Int
+  estado                   Int
+  fechaInicio              DateTime
   fechaUltimaActualizacion DateTime
-  cliente                 Cliente         @relation(fields: [clienteId], references: [id])
-  estadoVenta             EstadoVenta     @relation(fields: [estado], references: [id])
-  productos               ProductoVenta[]
-  envios                  Envio[]
+  cliente                  Cliente         @relation(fields: [clienteId], references: [id])
+  estadoVenta              EstadoVenta     @relation(fields: [estado], references: [id])
+  productos                ProductoVenta[]
+  envios                   Envio[]
 
   @@map("Venta")
 }
@@ -177,12 +176,12 @@ enum TipoEntidad {
 }
 
 model Entidad {
-  id             Int             @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   nombre         String
   tipo           TipoEntidad
   entidadUsuario EntidadUsuario[]
-  permisos       Entidad[]       @relation("PermisoRol")
-  roles          Entidad[]       @relation("PermisoRol")
+  permisos       Entidad[]        @relation("PermisoRol")
+  roles          Entidad[]        @relation("PermisoRol")
 
   @@map("Entidad")
 }
