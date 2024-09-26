@@ -1,7 +1,6 @@
 import { generateJWT } from "@/api/helpers/jwt.ts";
 import { AccessError } from "@/api/types/errors.ts";
 import { prisma } from "@/api/helpers/prisma.ts";
-import { hash, verify } from "@/api/helpers/hash";
 
 interface LoginInput {
   email: string;
@@ -22,11 +21,17 @@ async function login({ email, password }: LoginInput) {
   if (!existingUser) {
     throw new AccessError("User doesnt exist");
   }
+  const passwordBytes = new TextEncoder().encode(password);
 
-  if (await verify(password, existingUser.clave) || email !== existingUser.email) {
+  const hashedPassword = await crypto.subtle.digest("SHA-256", passwordBytes);
+  const hashArray = Array.from(new Uint8Array(hashedPassword));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  if (hashHex !== existingUser.clave || email !== existingUser.email) {
     throw new AccessError("Incorrect password");
   }
-  
   const token = await generateJWT(existingUser);
 
 

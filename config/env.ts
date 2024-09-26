@@ -1,16 +1,26 @@
-import dotenv from 'dotenv';
-import { z } from 'zod';
+enum EnvVars {
+  ENVIRONMENT = "ENVIRONMENT",
+  DATABASE_URL = "DATABASE_URL",
+  JWT_SECRET = "JWT_SECRET",
+  MAILERSEND_API_KEY = "MAILERSEND_API_KEY",
+}
 
-// Load environment variables from .env file
-dotenv.config();
+type ParsedEnvVars = {
+  [key in EnvVars]: string;
+};
 
-// Define the schema for our environment variables
-const envSchema = z.object({
-  ENVIRONMENT: z.enum(['development', 'production', 'test']),
-  DATABASE_URL: z.string().url(),
-  JWT_SECRET: z.string().min(32),
-  MAILERSEND_API_KEY: z.string(),
-});
+function getEnvVars(): ParsedEnvVars {
+  const parsedEnvVars: Partial<ParsedEnvVars> = {};
 
+  for (const key of Object.values(EnvVars)) {
+    const value = Bun.env[key];
+    if (value === undefined) {
+      throw new Error(`Environment variable ${key} is not defined`);
+    }
+    parsedEnvVars[key] = value;
+  }
 
-export const env = envSchema.parse(process.env);
+  return parsedEnvVars as ParsedEnvVars;
+}
+
+export const env = getEnvVars();
