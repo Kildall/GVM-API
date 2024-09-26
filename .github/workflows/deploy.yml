@@ -27,6 +27,6 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "gvm-api-bun"
+          project: "gvm-api"
           entrypoint: "./out/server.js"
           root: "."
