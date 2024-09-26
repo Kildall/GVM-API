@@ -5,7 +5,17 @@ const result = await Bun.build({
   outdir: './out',
   target: 'node',
   format: 'esm',
-  external: ['@prisma/client']
+  external: ['@prisma/client'],
+  plugins: [
+    {
+      name: 'node-modules',
+      setup(build) {
+        build.onResolve({ filter: /^node:/ }, args => {
+          return { external: true, path: args.path };
+        });
+      },
+    },
+  ],
 });
 
 console.log("Build completed.");

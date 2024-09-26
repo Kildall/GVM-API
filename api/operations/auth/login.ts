@@ -1,7 +1,7 @@
 import { generateJWT } from "@/api/helpers/jwt.ts";
 import { AccessError } from "@/api/types/errors.ts";
 import { prisma } from "@/api/helpers/prisma.ts";
-import crypto from 'crypto';
+import { createHash } from 'node:crypto';
 
 interface LoginInput {
   email: string;
@@ -23,7 +23,7 @@ async function login({ email, password }: LoginInput) {
     throw new AccessError("User doesnt exist");
   }
 
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+  const hashedPassword = createHash('sha256').update(password).digest('hex');
 
   if (hashedPassword !== existingUser.clave || email !== existingUser.email) {
     throw new AccessError("Incorrect password");

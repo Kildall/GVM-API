@@ -1,6 +1,6 @@
 import { prisma } from "@/api/helpers/prisma.ts";
 import { ParamsError } from "@/api/types/errors.ts";
-import crypto from 'crypto';
+import { createHash } from 'node:crypto';
 
 interface SignupInput {
   email: string;
@@ -18,7 +18,7 @@ async function signup({ email, password, name }: SignupInput) {
   }
 
   // Hash the password
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+  const hashedPassword = createHash('sha256').update(password).digest('hex');
 
   // Create new user
   await prisma.usuario.create({
