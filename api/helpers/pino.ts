@@ -1,7 +1,7 @@
 import pino from "pino";
 import { env } from "@/config/env.ts";
 
-const log = pino.default({
+const log = pino({
     level: env.ENVIRONMENT === "development" ? "debug" : "info",
     customLevels: {
         debug: 10,
