@@ -13,7 +13,7 @@ function getEnvVars(): ParsedEnvVars {
   const parsedEnvVars: Partial<ParsedEnvVars> = {};
 
   for (const key of Object.values(EnvVars)) {
-    const value = process.env[key];
+    const value = Bun.env[key];
     if (value === undefined) {
       throw new Error(`Environment variable ${key} is not defined`);
     }
