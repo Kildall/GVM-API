@@ -5,8 +5,8 @@
   "scripts": {
     "prisma:generate": "bunx prisma generate",
     "prisma:migrate": "bunx prisma migrated dev",
-    "server": "bun run --hot server.ts",
-    "build": "bun run ./build.ts"
+    "dev": "bun run --hot server.ts",
+    "server": "bun run prisma:generate && bun server.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
