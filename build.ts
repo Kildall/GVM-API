@@ -2,7 +2,10 @@ console.log("Starting build process...");
 
 const result = await Bun.build({
   entrypoints: ['./server.ts'],
-  outdir: './out'
+  outdir: './out',
+  target: 'node',
+  format: 'esm',
+  external: ['@prisma/client']
 });
 
 console.log("Build completed.");
