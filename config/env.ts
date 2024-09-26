@@ -10,8 +10,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_SECRET: z.string().min(32),
   MAILERSEND_API_KEY: z.string(),
-  PORT: z.number().positive().min(1000).max(65000)
-});
+  PORT: z.custom<number>()
+    .refine((value) => value ?? false, "Required")
+    .refine((value) => Number.isFinite(Number(value)), "Invalid number")
+    .transform((value) => Number(value)),
+})
 
 
 export const env = envSchema.parse(process.env);
