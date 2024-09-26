@@ -5,7 +5,7 @@ import { Recipient } from "mailersend";
 const SUBJECT = "Verify your GVM Account";
 const EMAIL_VERIFICATION_TEMPLATE_ID = "jpzkmgq6jxn4059v";
 
-async function sendVerificationEmail(user: Usuario) {
+async function sendVerificationEmail(user: Usuario, token: string) {
   const recipient: Recipient = {
     email: user.email,
   };
@@ -15,7 +15,7 @@ async function sendVerificationEmail(user: Usuario) {
     EMAIL_VERIFICATION_TEMPLATE_ID,
     {
       name: user.nombre,
-      verification_url: "https://google.com/",
+      verification_url: token,
     },
   );
 
