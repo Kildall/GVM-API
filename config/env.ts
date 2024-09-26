@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_SECRET: z.string().min(32),
   MAILERSEND_API_KEY: z.string(),
+  PORT: z.number().positive().min(1000).max(65000)
 });
 
 
