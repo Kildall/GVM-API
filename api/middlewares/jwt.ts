@@ -7,7 +7,7 @@ const jwt = createMiddleware((c, next) => {
   if (
     path.startsWith("/api/auth")
   ) {
-    // Skip JWT check for login and signup routes
+    // Skip JWT check for auth routes
     return next();
   }
 

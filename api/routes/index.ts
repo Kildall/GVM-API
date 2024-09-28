@@ -19,12 +19,13 @@ api.use("/*", cors());
 // Custom middleware for selective JWT checking
 
 api.onError((error, c) => {
+  log.error(error);
   if (error instanceof HTTPException) {
     const response: APIResponse = {
       status: {
         success: false,
         errors: [
-          error.cause,
+          error.cause || error.message,
         ].flat(),
       },
       data: null,
@@ -32,7 +33,6 @@ api.onError((error, c) => {
 
     return c.json(response);
   }
-  log.error(error);
   let errorMessage = "An unknown error occurred";
 
   const response: APIResponse = {

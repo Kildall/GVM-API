@@ -1,9 +1,10 @@
 import { createMiddleware } from "hono/factory";
 import { getConnInfo } from "hono/bun";
 import { log } from "@/api/helpers/pino";
+import dayjs from "dayjs";
 
 const logger = createMiddleware(async (c, next) => {
-  const requestStartTime = Date.now();
+  const requestStartTime = dayjs();
   const method = c.req.method;
   const url = c.req.url;
   const connInfo = getConnInfo(c);
@@ -22,7 +23,7 @@ const logger = createMiddleware(async (c, next) => {
   await next();
 
   // Calculate response time
-  const responseTime = Date.now() - requestStartTime;
+  const responseTime = dayjs().diff(requestStartTime);
 
   // Log response details
   log.debug({
