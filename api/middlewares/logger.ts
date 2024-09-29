@@ -17,7 +17,6 @@ const logger = createMiddleware(async (c, next) => {
     url,
     ip,
     headers: c.req.raw.headers,
-    body: await c.req.json().catch(() => ({})), // Attempt to parse JSON body, or empty object if not possible
   }, "incoming request");
 
   await next();

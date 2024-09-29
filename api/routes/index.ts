@@ -8,7 +8,6 @@ import { responseFormatter } from "@/api/middlewares/formatter.ts";
 import { HTTPException } from "hono/http-exception";
 import type { APIResponse } from "@/api/types/api.ts";
 import { log } from "@/api/helpers/pino";
-import { APIError } from "@/api/types/errors";
 
 type Variables = JwtVariables;
 
