@@ -1,7 +1,7 @@
 import { hash } from "@/api/helpers/hash";
 import { prisma } from "@/api/helpers/prisma.ts";
 import { ParamsError } from "@/api/types/errors.ts";
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
 interface SignupInput {
   email: string;
@@ -10,7 +10,7 @@ interface SignupInput {
 }
 
 async function signup({ email, password, name }: SignupInput) {
-  const existingUser = await prisma.usuario.findFirst({
+  const existingUser = await prisma.user.findFirst({
     where: { email: email },
   });
 
@@ -22,12 +22,12 @@ async function signup({ email, password, name }: SignupInput) {
   const hashedPassword = await hash(password);
 
   // Create new user
-  await prisma.usuario.create({
+  await prisma.user.create({
     data: {
       email,
-      clave: hashedPassword,
-      nombre: name,
-      habilitado: false,
+      password: hashedPassword,
+      name,
+      enabled: false,
     },
   });
 

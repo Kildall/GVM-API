@@ -2,16 +2,18 @@ import { Hono } from "hono";
 import type { JwtVariables } from "hono/jwt";
 import { cors } from "hono/cors";
 import { auth } from "@/api/routes/auth/index.ts";
-import { jwt } from "@/api/middlewares/jwt.ts";
 import logger from "@/api/middlewares/logger.ts";
 import { responseFormatter } from "@/api/middlewares/formatter.ts";
 import { HTTPException } from "hono/http-exception";
-import type { APIResponse, HonoAuthenticatedRoute } from "@/api/types/api.ts";
+import type { APIResponse } from "@/api/types/api.ts";
 import { log } from "@/api/helpers/pino";
-import { session } from "@/api/middlewares/session";
-import { every } from "hono/combine";
+import {
+  auth as authMiddleware,
+  type JWTVariables,
+} from "@/api/middlewares/auth";
+import { customer } from "@/api/routes/customer";
 
-type Variables = JwtVariables & HonoAuthenticatedRoute;
+type Variables = JWTVariables;
 
 const api = new Hono<{ Variables: Variables }>().basePath("/api");
 
@@ -21,7 +23,7 @@ api.use("/*", responseFormatter);
 
 api.use("/*", logger);
 
-api.use("/*", every(jwt, session));
+api.use("/*", authMiddleware);
 
 api.onError((error, c) => {
   log.error(error);
@@ -54,5 +56,6 @@ api.onError((error, c) => {
 });
 
 api.route("/auth", auth);
+api.route("/customer", customer);
 
 export { api };

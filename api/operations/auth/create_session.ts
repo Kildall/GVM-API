@@ -2,40 +2,43 @@ import { hash } from "@/api/helpers/hash";
 import { generateJWT } from "@/api/helpers/jwt";
 import { prisma } from "@/api/helpers/prisma";
 import type { RequestTelemetrics } from "@/api/types/api";
-import type { Sesion, Usuario } from "@prisma/client";
+import type { Session, User } from "@prisma/client";
 import dayjs from "dayjs";
-import { randomUUID } from "node:crypto";
 
 interface CreateSesionResult {
-  sesion: Sesion;
-  tokenJWT: string;
+  session: Session;
+  jwt: string;
 }
 
-async function createSession(user: Usuario, telemetrics: RequestTelemetrics, remember: boolean): Promise<CreateSesionResult> {
-  const now = dayjs()
-  const sesionDuration = remember ? 7 : 1;   // Duration in days
+async function createSession(
+  user: User,
+  telemetrics: RequestTelemetrics,
+  remember: boolean
+): Promise<CreateSesionResult> {
+  const now = dayjs();
+  const sesionDuration = remember ? 7 : 1; // Duration in days
 
-  const sesion = await prisma.sesion.create({
+  const session = await prisma.session.create({
     data: {
       ip: telemetrics.ip,
       userAgent: telemetrics.userAgent,
       createdAt: now.toDate(),
-      expiresAt: now.add(sesionDuration, 'days').toDate(),
-      activo: true,
-      Usuario: {
+      expiresAt: now.add(sesionDuration, "days").toDate(),
+      active: true,
+      User: {
         connect: {
-          id: user.id
-        }
-      }
+          id: user.id,
+        },
+      },
     },
-  })
+  });
 
-  const tokenJWT = await generateJWT(user, sesion);
+  const jwt = await generateJWT(user, session);
 
   return {
-    tokenJWT,
-    sesion
+    jwt,
+    session,
   };
 }
 
-export { createSession }
+export { createSession };

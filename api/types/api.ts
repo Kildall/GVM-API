@@ -1,4 +1,4 @@
-import type { Sesion, Usuario } from "@prisma/client";
+import type { Session, User } from "@prisma/client";
 import type { JWTPayload } from "hono/utils/jwt/types";
 
 export interface APIResponse {
@@ -17,9 +17,4 @@ export interface RequestTelemetrics {
 export interface APIJWTPayload extends JWTPayload {
   id: number;
   sesion: string;
-}
-
-export interface HonoAuthenticatedRoute {
-  user?: Usuario;
-  session?: Sesion;
 }

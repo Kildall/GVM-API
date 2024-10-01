@@ -11,7 +11,7 @@ interface LogoutResponse {
 }
 
 async function logout({ userId, sessionId }: LogoutInput) {
-  const user = await prisma.usuario.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       id: userId,
     },
@@ -23,11 +23,11 @@ async function logout({ userId, sessionId }: LogoutInput) {
     });
   }
 
-  const session = await prisma.sesion.findFirst({
+  const session = await prisma.session.findFirst({
     where: {
       id: sessionId,
-      usuarioId: user.id,
-      activo: true,
+      userId: user.id,
+      active: true,
     },
   });
 
@@ -39,13 +39,13 @@ async function logout({ userId, sessionId }: LogoutInput) {
 
   // Update the session
 
-  await prisma.sesion.update({
+  await prisma.session.update({
     where: {
       id: sessionId,
-      usuarioId: user.id,
+      userId: user.id,
     },
     data: {
-      activo: false,
+      active: false,
     },
   });
 

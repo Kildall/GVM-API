@@ -1,11 +1,11 @@
-import type { Usuario } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { sendEmail } from "@/api/helpers/mailersend.ts";
 import { Recipient } from "mailersend";
 
 const SUBJECT = "Verify your GVM Account";
 const EMAIL_VERIFICATION_TEMPLATE_ID = "jpzkmgq6jxn4059v";
 
-async function sendVerificationEmail(user: Usuario, token: string) {
+async function sendVerificationEmail(user: User, token: string) {
   const recipient: Recipient = {
     email: user.email,
   };
@@ -14,9 +14,9 @@ async function sendVerificationEmail(user: Usuario, token: string) {
     [recipient],
     EMAIL_VERIFICATION_TEMPLATE_ID,
     {
-      name: user.nombre,
+      name: user.name,
       verification_url: token,
-    },
+    }
   );
 
   if (result.statusCode !== 200) {

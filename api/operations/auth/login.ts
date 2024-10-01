@@ -1,7 +1,7 @@
 import { generateJWT } from "@/api/helpers/jwt.ts";
 import { AccessError } from "@/api/types/errors.ts";
 import { prisma } from "@/api/helpers/prisma.ts";
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 import { createSession } from "@/api/operations/auth/create_session";
 import type { RequestTelemetrics } from "@/api/types/api";
 import { hash } from "@/api/helpers/hash";
@@ -21,7 +21,7 @@ interface LoginResponse {
 
 async function login({ email, password, remember, telemetrics }: LoginInput) {
   // Check if user exists
-  const existingUser = await prisma.usuario.findFirst({
+  const existingUser = await prisma.user.findFirst({
     where: { email: email },
   });
 
@@ -31,17 +31,24 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
 
   const hashedPassword = await hash(password);
 
-  if (hashedPassword !== existingUser.clave || email !== existingUser.email) {
+  if (
+    hashedPassword !== existingUser.password ||
+    email !== existingUser.email
+  ) {
     throw new AccessError("Incorrect password");
   }
 
-  const { tokenJWT: token, sesion } = await createSession(existingUser, telemetrics, remember);
+  const { jwt: token, session } = await createSession(
+    existingUser,
+    telemetrics,
+    remember
+  );
 
   const response: LoginResponse = {
-    expires: sesion.expiresAt,
+    expires: session.expiresAt,
     token,
-    verified: existingUser.habilitado
-  }
+    verified: existingUser.enabled,
+  };
 
   return response;
 }
