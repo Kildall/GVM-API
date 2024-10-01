@@ -9,8 +9,7 @@
     "server": "bun run prisma:generate && bun server.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@prisma/client": "^5.20.0"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

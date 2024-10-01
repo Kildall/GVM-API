@@ -7,6 +7,7 @@ import { getConnInfo } from "hono/bun";
 import type { RequestTelemetrics } from "@/api/types/api";
 import { decode } from "hono/jwt";
 import { HTTPException } from "hono/http-exception";
+import { logout } from "@/api/operations/auth/logout";
 
 const auth = new Hono();
 
@@ -30,36 +31,49 @@ auth.post("/signup", zValidator("json", signupValidationSchema), async (c) => {
 const loginValidationSchema = z.object({
   email: z.string().email().max(100),
   password: z.string().min(8).max(256),
-  remember: z.boolean()
+  remember: z.boolean(),
 });
 
 auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
   const { email, password, remember } = c.req.valid("json");
   const connInfo = getConnInfo(c);
   const telemetrics: RequestTelemetrics = {
-    ip: connInfo.remote.address || 'Unknown',
-    userAgent: c.req.header('User-Agent') || 'Unknown'
-  }
+    ip: connInfo.remote.address || "Unknown",
+    userAgent: c.req.header("User-Agent") || "Unknown",
+  };
 
   const result = await login({ email, password, remember, telemetrics });
 
   return c.json(result);
 });
 
+// Type should be APIJWTPayload
+const jwtValidationSchema = z.object({
+  id: z.number().positive(),
+  sesion: z.string().uuid(),
+});
 
 auth.post("/logout", async (c) => {
-  const authHeader = c.req.header('Authorization')
-  if(!authHeader) {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) {
     throw new HTTPException(401, {
-      cause: { message: 'unable to authorize'}
+      cause: { message: "unable to authorize" },
     });
   }
-  const [,, token] = authHeader.split(' ');
+  const [, , token] = authHeader.split(" ");
   const { payload } = decode(token);
+  const validationResult = jwtValidationSchema.safeParse(payload);
+  if (!validationResult.success) {
+    throw new HTTPException(401, {
+      cause: { message: "unable to authorize" },
+    });
+  }
 
-  // Find a session with that id and that user, if it exists and it's not enabled, then disable it
+  const { sesion: sessionId, id: userId } = validationResult.data;
 
-  return c.json({ message: 'Logout successful'})
+  const result = await logout({ userId, sessionId });
+
+  return c.json(result);
 });
 
 export { auth };
