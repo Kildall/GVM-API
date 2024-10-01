@@ -6,16 +6,22 @@ import { jwt } from "@/api/middlewares/jwt.ts";
 import logger from "@/api/middlewares/logger.ts";
 import { responseFormatter } from "@/api/middlewares/formatter.ts";
 import { HTTPException } from "hono/http-exception";
-import type { APIResponse } from "@/api/types/api.ts";
+import type { APIResponse, HonoAuthenticatedRoute } from "@/api/types/api.ts";
 import { log } from "@/api/helpers/pino";
+import { session } from "@/api/middlewares/session";
+import { every } from "hono/combine";
 
-type Variables = JwtVariables;
+type Variables = JwtVariables & HonoAuthenticatedRoute;
 
 const api = new Hono<{ Variables: Variables }>().basePath("/api");
 
 api.use("/*", cors());
 
-// Custom middleware for selective JWT checking
+api.use("/*", responseFormatter);
+
+api.use("/*", logger);
+
+api.use("/*", every(jwt, session));
 
 api.onError((error, c) => {
   log.error(error);
@@ -23,9 +29,7 @@ api.onError((error, c) => {
     const response: APIResponse = {
       status: {
         success: false,
-        errors: [
-          error.cause || error.message,
-        ].flat(),
+        errors: [error.cause || error.message].flat(),
       },
       data: null,
     };
@@ -43,26 +47,11 @@ api.onError((error, c) => {
   };
 
   if (error instanceof Error) {
-    response.status.errors = [error.message]
+    response.status.errors = [error.message];
   }
 
   return c.json(response);
 });
-
-api.use(
-  "/*",
-  responseFormatter,
-);
-
-api.use(
-  "/*",
-  logger,
-);
-
-api.use(
-  "/*",
-  jwt,
-);
 
 api.route("/auth", auth);
 

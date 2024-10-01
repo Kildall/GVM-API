@@ -8,6 +8,7 @@ import type { RequestTelemetrics } from "@/api/types/api";
 import { decode } from "hono/jwt";
 import { HTTPException } from "hono/http-exception";
 import { logout } from "@/api/operations/auth/logout";
+import { jwtValidationSchema } from "@/api/middlewares/jwt";
 
 const auth = new Hono();
 
@@ -45,12 +46,6 @@ auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
   const result = await login({ email, password, remember, telemetrics });
 
   return c.json(result);
-});
-
-// Type should be APIJWTPayload
-const jwtValidationSchema = z.object({
-  id: z.number().positive(),
-  sesion: z.string().uuid(),
 });
 
 auth.post("/logout", async (c) => {

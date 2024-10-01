@@ -1,12 +1,17 @@
 import { createMiddleware } from "hono/factory";
 import { jwt as honoJwt } from "hono/jwt";
 import { env } from "@/config/env.ts";
+import { z } from "zod";
+
+// Type should be APIJWTPayload
+export const jwtValidationSchema = z.object({
+  id: z.number().positive(),
+  sesion: z.string().uuid(),
+});
 
 const jwt = createMiddleware((c, next) => {
   const path = c.req.path;
-  if (
-    path.startsWith("/api/auth")
-  ) {
+  if (path.startsWith("/api/auth")) {
     // Skip JWT check for auth routes
     return next();
   }
