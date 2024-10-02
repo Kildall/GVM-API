@@ -57,7 +57,7 @@ model Address {
   details    String?
   enabled    Boolean    @default(true)
   customer   Customer   @relation(fields: [customerId], references: [id])
-  shipments  Shipment[]
+  deliveries Delivery[]
 
   @@map("Address")
 }
@@ -79,30 +79,38 @@ model Employee {
   @@map("Employee")
 }
 
-model Shipment {
-  id                      Int                      @id @default(autoincrement()) @map("ShipmentId")
-  saleId                  Int
-  deliveryPersonId        Int
-  addressId               Int
-  status                  Int
-  startDate               DateTime
-  lastUpdateDate          DateTime
-  sale                    Sale                     @relation(fields: [saleId], references: [id])
-  deliveryPerson          DeliveryPerson           @relation(fields: [deliveryPersonId], references: [id])
-  address                 Address                  @relation(fields: [addressId], references: [id])
-  shipmentStatus          ShipmentStatus           @relation(fields: [status], references: [id])
-  deliveryPersonShipments DeliveryPersonShipment[]
+model Delivery {
+  id                       Int                      @id @default(autoincrement()) @map("DeliveryId")
+  saleId                   Int
+  deliveryPersonId         Int
+  addressId                Int
+  deliveryStatusId         Int                      @unique
+  startDate                DateTime
+  lastUpdateDate           DateTime
+  sale                     Sale                     @relation(fields: [saleId], references: [id])
+  deliveryPerson           DeliveryPerson           @relation(fields: [deliveryPersonId], references: [id])
+  address                  Address                  @relation(fields: [addressId], references: [id])
+  deliveryStatus           DeliveryStatus           @relation(fields: [deliveryStatusId], references: [id])
+  deliveryPersonDeliveries DeliveryPersonDelivery[]
 
-  @@map("Shipment")
+  @@map("Delivery")
 }
 
-model ShipmentStatus {
-  id                      Int                      @id @map("StatusId")
-  statusDescription       String
-  shipments               Shipment[]
-  deliveryPersonShipments DeliveryPersonShipment[]
+enum DeliveryStatusEnum {
+  STARTED
+  IN_PROGRESS
+  DELIVERED
+  CANCELED
+  BLOCKED
+}
 
-  @@map("ShipmentStatus")
+model DeliveryStatus {
+  id                     Int                      @id @default(autoincrement()) @map("StatusId")
+  status                 DeliveryStatusEnum
+  delivery               Delivery?
+  DeliveryPersonDelivery DeliveryPersonDelivery[]
+
+  @@map("DeliveryStatus")
 }
 
 model SaleStatus {
@@ -138,25 +146,25 @@ model ProductSale {
 }
 
 model DeliveryPerson {
-  id              Int                      @id @default(autoincrement()) @map("DeliveryPersonId")
-  name            String
-  phone           String
-  shipments       DeliveryPersonShipment[]
-  directShipments Shipment[]
+  id               Int                      @id @default(autoincrement()) @map("DeliveryPersonId")
+  name             String
+  phone            String
+  deliveries       DeliveryPersonDelivery[]
+  directDeliveries Delivery[]
 
   @@map("DeliveryPerson")
 }
 
-model DeliveryPersonShipment {
+model DeliveryPersonDelivery {
   deliveryPersonId Int
-  shipmentId       Int
-  status           Int
+  deliveryId       Int
+  deliverStatusId  Int
   deliveryPerson   DeliveryPerson @relation(fields: [deliveryPersonId], references: [id])
-  shipment         Shipment       @relation(fields: [shipmentId], references: [id])
-  shipmentStatus   ShipmentStatus @relation(fields: [status], references: [id])
+  delivery         Delivery       @relation(fields: [deliveryId], references: [id])
+  deliveryStatus   DeliveryStatus @relation(fields: [deliverStatusId], references: [id])
 
-  @@id([deliveryPersonId, shipmentId])
-  @@map("DeliveryPersonShipment")
+  @@id([deliveryPersonId, deliveryId])
+  @@map("DeliveryPersonDelivery")
 }
 
 model Sale {
@@ -168,7 +176,7 @@ model Sale {
   customer       Customer      @relation(fields: [customerId], references: [id])
   saleStatus     SaleStatus    @relation(fields: [status], references: [id])
   products       ProductSale[]
-  shipments      Shipment[]
+  deliveries     Delivery[]
 
   @@map("Sale")
 }
