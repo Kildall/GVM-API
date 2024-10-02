@@ -1,11 +1,17 @@
-import type { User } from "@prisma/client";
+import type { Signature, User } from "@prisma/client";
 import { sendEmail } from "@/api/helpers/mailersend.ts";
 import { Recipient } from "mailersend";
+import { env } from "@/config/env";
+import { sign } from "hono/jwt";
 
 const SUBJECT = "Verify your GVM Account";
 const EMAIL_VERIFICATION_TEMPLATE_ID = "jpzkmgq6jxn4059v";
 
-async function sendVerificationEmail(user: User, token: string) {
+async function sendVerificationEmail(user: User, signature: Signature) {
+  const token = await sign(
+    { id: signature.id, user: signature.userId },
+    env.JWT_SECRET
+  );
   const recipient: Recipient = {
     email: user.email,
   };
@@ -15,7 +21,7 @@ async function sendVerificationEmail(user: User, token: string) {
     EMAIL_VERIFICATION_TEMPLATE_ID,
     {
       name: user.name,
-      verification_url: token,
+      token: token,
     }
   );
 

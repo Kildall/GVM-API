@@ -10,6 +10,7 @@ async function getCustomerById(
   const customer = await prisma.customer.findFirst({
     where: {
       id: customerId,
+      enabled: true,
     },
   });
 

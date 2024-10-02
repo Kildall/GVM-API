@@ -11,7 +11,8 @@ import {
   auth as authMiddleware,
   type JWTVariables,
 } from "@/api/middlewares/auth";
-import { customer } from "@/api/routes/customer";
+import { customers } from "@/api/routes/customers";
+import { addresses } from "@/api/routes/address";
 
 type Variables = JWTVariables;
 
@@ -56,6 +57,7 @@ api.onError((error, c) => {
 });
 
 api.route("/auth", auth);
-api.route("/customer", customer);
+api.route("/customers", customers);
+api.route("/addresses", addresses);
 
 export { api };

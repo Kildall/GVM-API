@@ -1,7 +1,10 @@
 import { hash } from "@/api/helpers/hash";
 import { prisma } from "@/api/helpers/prisma.ts";
+import { sendVerificationEmail } from "@/api/operations/email/send_verification_email";
 import { ParamsError } from "@/api/types/errors.ts";
-import { createHash } from "node:crypto";
+import { AccountAction } from "@prisma/client";
+import dayjs from "dayjs";
+import { sign } from "hono/jwt";
 
 interface SignupInput {
   email: string;
@@ -15,14 +18,14 @@ async function signup({ email, password, name }: SignupInput) {
   });
 
   if (existingUser) {
-    throw new ParamsError("Usuario ya existe");
+    throw new ParamsError("usuario ya existe");
   }
 
   // Hash the password
   const hashedPassword = await hash(password);
 
   // Create new user
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email,
       password: hashedPassword,
@@ -31,8 +34,16 @@ async function signup({ email, password, name }: SignupInput) {
     },
   });
 
-  // TODO: Add verification of email
-  // await sendVerificationEmail(newUser);
+  const signature = await prisma.signature.create({
+    data: {
+      action: AccountAction.ACTIVATE,
+      createdAt: new Date(),
+      expiresAt: dayjs().add(7, "days").toDate(),
+      userId: user.id,
+    },
+  });
+
+  await sendVerificationEmail(user, signature);
 
   return;
 }
