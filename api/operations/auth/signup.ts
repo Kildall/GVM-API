@@ -24,28 +24,28 @@ async function signup({ email, password, name }: SignupInput) {
   // Hash the password
   const hashedPassword = await hash(password);
 
-  // Create new user
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name,
-      enabled: false,
-    },
+  return await prisma.$transaction(async (prisma) => {
+    // Create new user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        enabled: false,
+      },
+    });
+
+    const signature = await prisma.signature.create({
+      data: {
+        action: AccountAction.ACTIVATE,
+        createdAt: new Date(),
+        expiresAt: dayjs().add(7, "days").toDate(),
+        userId: user.id,
+      },
+    });
+
+    await sendVerificationEmail(user, signature);
   });
-
-  const signature = await prisma.signature.create({
-    data: {
-      action: AccountAction.ACTIVATE,
-      createdAt: new Date(),
-      expiresAt: dayjs().add(7, "days").toDate(),
-      userId: user.id,
-    },
-  });
-
-  await sendVerificationEmail(user, signature);
-
-  return;
 }
 
 export { signup };

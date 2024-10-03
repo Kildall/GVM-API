@@ -14,32 +14,29 @@ async function deleteAddress({
   addressId,
   customerId,
 }: DeleteAddressInput): Promise<DeleteAddressResponse> {
-  const address = await prisma.address.findFirst({
-    where: {
-      id: addressId,
-      customerId: customerId,
-      enabled: true,
-    },
-  });
+  try {
+    const updatedAddress = await prisma.address.updateMany({
+      where: {
+        id: addressId,
+        customerId: customerId,
+        enabled: true,
+      },
+      data: {
+        enabled: false,
+      },
+    });
 
-  if (!address) {
-    throw new ParamsError("address not found");
+    if (updatedAddress.count === 0) {
+      throw new ParamsError("address not found or already deleted");
+    }
+
+    return { message: "address deleted successfully" };
+  } catch (error) {
+    if (error instanceof ParamsError) {
+      throw error;
+    }
+    throw new Error("failed to delete address");
   }
-
-  await prisma.address.update({
-    where: {
-      id: address.id,
-    },
-    data: {
-      enabled: false,
-    },
-  });
-
-  const response: DeleteAddressResponse = {
-    message: "address deleted succesfully",
-  };
-
-  return response;
 }
 
 export { deleteAddress };

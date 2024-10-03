@@ -1,34 +1,42 @@
 import { prisma } from "@/api/helpers/prisma";
 import { ParamsError } from "@/api/types/errors";
-import { type Delivery } from "@prisma/client";
+import {
+  BusinessStatusEnum,
+  DeliveryStatusEnum,
+  DriverStatusEnum,
+  type Delivery,
+} from "@prisma/client";
 
 interface CreateDeliveryInput {
   saleId: number;
-  addressId: number;
   deliveryPersonId: number;
+  addressId: number;
+  startDate: Date;
 }
 
 interface CreateDeliveryResponse extends Delivery {}
 
-async function createDelivery(
-  input: CreateDeliveryInput
-): Promise<CreateDeliveryResponse> {
+async function createDelivery({
+  saleId,
+  deliveryPersonId,
+  addressId,
+  startDate,
+}: CreateDeliveryInput): Promise<CreateDeliveryResponse> {
   try {
     const delivery = await prisma.delivery.create({
       data: {
-        sale: { connect: { id: input.saleId } },
-        address: { connect: { id: input.addressId } },
-        deliveryPerson: { connect: { id: input.deliveryPersonId } },
-        startDate: new Date(),
+        saleId,
+        deliveryPersonId,
+        addressId,
+        startDate,
         lastUpdateDate: new Date(),
-        deliveryStatus: {
-          create: {
-            status: "STARTED",
-          },
-        },
+        status: DeliveryStatusEnum.PENDING_ASSIGNMENT,
+        businessStatus: BusinessStatusEnum.STARTED,
       },
       include: {
-        deliveryStatus: true,
+        sale: true,
+        deliveryPerson: true,
+        address: true,
       },
     });
 

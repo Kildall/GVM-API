@@ -9,7 +9,7 @@ interface GetAddressesByCustomersResponse {
 async function getAddressesByCustomer(
   customerId: number
 ): Promise<GetAddressesByCustomersResponse> {
-  const customer = await prisma.customer.findFirst({
+  const customer = await prisma.customer.findUnique({
     where: {
       id: customerId,
       enabled: true,

@@ -7,7 +7,6 @@ import { getCustomerById } from "@/api/operations/customers/get_customer_by_id";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import { updateCustomer } from "@/api/operations/customers/update_customer";
 
 const customers = new Hono<{ Variables: JWTVariables }>();
 
@@ -51,22 +50,6 @@ customers.delete(
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteCustomer(id);
-    return c.json(result);
-  }
-);
-
-const updateCustomerValidationSchema = z.object({
-  customerId: z.number().positive(),
-  name: z.string().min(3).max(256).optional(),
-  phone: z.string().optional(),
-});
-
-customers.put(
-  "/",
-  zValidator("json", updateCustomerValidationSchema),
-  async (c) => {
-    const { customerId, name, phone } = c.req.valid("json");
-    const result = await updateCustomer({ customerId, name, phone });
     return c.json(result);
   }
 );
