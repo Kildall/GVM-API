@@ -7,7 +7,6 @@ import { getDeliveryById } from "@/api/operations/deliveries/get_delivery_by_id"
 import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
 import { zValidator } from "@hono/zod-validator";
 import { DeliveryStatusEnum } from "@prisma/client";
-import dayjs from "dayjs";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -36,7 +35,7 @@ const createDeliveryValidationSchema = z.object({
   saleId: z.number().positive(),
   deliveryPersonId: z.number().positive(),
   addressId: z.number().positive(),
-  startDate: z.date().min(dayjs().subtract(1, "day").toDate()),
+  startDate: z.coerce.date(),
 });
 
 deliveries.post(

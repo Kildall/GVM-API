@@ -7,51 +7,73 @@ import { getCustomerById } from "@/api/operations/customers/get_customer_by_id";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
+import { getSupplierById } from "@/api/operations/suppliers/get_supplier_by_id";
+import { getSuppliers } from "@/api/operations/suppliers/get_suppliers";
+import { createSupplier } from "@/api/operations/suppliers/create_supplier";
+import { deleteSupplier } from "@/api/operations/suppliers/delete_supplier";
+import { updateSupplier } from "@/api/operations/suppliers/update_suppliers";
 
-const customers = new Hono<{ Variables: JWTVariables }>();
+const suppliers = new Hono<{ Variables: JWTVariables }>();
 
 const idParamsValidationSchema = z.object({
   id: castToNumberSchema,
 });
 
-customers.get(
+suppliers.get(
   "/:id",
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await getCustomerById(id);
+    const result = await getSupplierById(id);
     return c.json(result);
   }
 );
 
-customers.get("/", async (c) => {
-  const result = await getCustomers();
+suppliers.get("/", async (c) => {
+  const result = await getSuppliers();
   return c.json(result);
 });
 
 const createCustomerValidationSchema = z.object({
   name: z.string().min(3).max(256),
-  phone: z.string(),
 });
 
-customers.post(
+suppliers.post(
   "/",
   zValidator("json", createCustomerValidationSchema),
   async (c) => {
-    const { name, phone } = c.req.valid("json");
-    const result = await createCustomer({ name, phone });
+    const { name } = c.req.valid("json");
+    const result = await createSupplier({ name });
     return c.json(result);
   }
 );
 
-customers.delete(
+suppliers.delete(
   "/:id",
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await deleteCustomer(id);
+    const result = await deleteSupplier(id);
     return c.json(result);
   }
 );
 
-export { customers };
+const updateSupplierValidationSchema = z.object({
+  supplierId: z.number().positive(),
+  name: z.string().min(3).max(256).optional(),
+});
+
+suppliers.put(
+  "/",
+  zValidator("json", updateSupplierValidationSchema),
+  async (c) => {
+    const { supplierId, name } = c.req.valid("json");
+    const result = await updateSupplier({
+      supplierId,
+      name,
+    });
+    return c.json(result);
+  }
+);
+
+export { suppliers };

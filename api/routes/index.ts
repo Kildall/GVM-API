@@ -14,6 +14,10 @@ import {
 import { customers } from "@/api/routes/customers";
 import { addresses } from "@/api/routes/address";
 import { deliveries } from "@/api/routes/deliveries";
+import { employees } from "@/api/routes/employees";
+import { purchases } from "@/api/routes/purchases";
+import { sales } from "@/api/routes/sales";
+import { suppliers } from "@/api/routes/suppliers";
 
 type Variables = JWTVariables;
 
@@ -57,9 +61,13 @@ api.onError((error, c) => {
   return c.json(response);
 });
 
+api.route("/addresses", addresses);
 api.route("/auth", auth);
 api.route("/customers", customers);
-api.route("/addresses", addresses);
 api.route("/deliveries", deliveries);
+api.route("/employees", employees);
+api.route("/purchases", purchases);
+api.route("/sales", sales);
+api.route("/suppliers", suppliers);
 
 export { api };

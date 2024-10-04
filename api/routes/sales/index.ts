@@ -1,57 +1,83 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { createCustomer } from "@/api/operations/customers/create_customer";
-import { deleteCustomer } from "@/api/operations/customers/delete_customer";
-import { getCustomers } from "@/api/operations/customers/get_customers";
-import { getCustomerById } from "@/api/operations/customers/get_customer_by_id";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
+import { getSaleById } from "@/api/operations/sales/get_sale_by_id";
+import { getSales } from "@/api/operations/sales/get_sales";
+import { createSale } from "@/api/operations/sales/create_sale";
+import { deleteSale } from "@/api/operations/sales/delete_sale";
+import { updateSale } from "@/api/operations/sales/update_sale";
+import { SaleStatusEnum } from "@prisma/client";
 
-const customers = new Hono<{ Variables: JWTVariables }>();
+const sales = new Hono<{ Variables: JWTVariables }>();
 
 const idParamsValidationSchema = z.object({
   id: castToNumberSchema,
 });
 
-customers.get(
-  "/:id",
-  zValidator("param", idParamsValidationSchema),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const result = await getCustomerById(id);
-    return c.json(result);
-  }
-);
-
-customers.get("/", async (c) => {
-  const result = await getCustomers();
+sales.get("/:id", zValidator("param", idParamsValidationSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await getSaleById(id);
   return c.json(result);
 });
 
-const createCustomerValidationSchema = z.object({
-  name: z.string().min(3).max(256),
-  phone: z.string(),
+sales.get("/", async (c) => {
+  const result = await getSales();
+  return c.json(result);
 });
 
-customers.post(
-  "/",
-  zValidator("json", createCustomerValidationSchema),
-  async (c) => {
-    const { name, phone } = c.req.valid("json");
-    const result = await createCustomer({ name, phone });
-    return c.json(result);
-  }
-);
+// TODO: Sales have no employee??
+const createSaleValidationSchema = z.object({
+  customerId: z.number().positive(),
+  products: z.array(
+    z.object({
+      productId: z.number().positive(),
+      quantity: z.number().positive(),
+    })
+  ),
+  startDate: z.coerce.date(),
+});
 
-customers.delete(
+sales.post("/", zValidator("json", createSaleValidationSchema), async (c) => {
+  const { customerId, products, startDate } = c.req.valid("json");
+  const result = await createSale({ customerId, products, startDate });
+  return c.json(result);
+});
+
+sales.delete(
   "/:id",
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await deleteCustomer(id);
+    const result = await deleteSale(id);
     return c.json(result);
   }
 );
 
-export { customers };
+const updateSaleValidationSchema = z.object({
+  saleId: z.number().positive(),
+  customerId: z.number().positive().optional(),
+  products: z
+    .array(
+      z.object({
+        productId: z.number().positive(),
+        quantity: z.number().positive(),
+      })
+    )
+    .optional(),
+  status: z.nativeEnum(SaleStatusEnum).optional(),
+});
+
+sales.put("/", zValidator("json", updateSaleValidationSchema), async (c) => {
+  const { saleId, customerId, products, status } = c.req.valid("json");
+  const result = await updateSale({
+    saleId,
+    customerId,
+    products,
+    status,
+  });
+  return c.json(result);
+});
+
+export { sales };

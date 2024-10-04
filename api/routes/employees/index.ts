@@ -1,57 +1,74 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { createCustomer } from "@/api/operations/customers/create_customer";
-import { deleteCustomer } from "@/api/operations/customers/delete_customer";
-import { getCustomers } from "@/api/operations/customers/get_customers";
-import { getCustomerById } from "@/api/operations/customers/get_customer_by_id";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
+import { getEmployeeById } from "@/api/operations/employees/get_employee_by_id";
+import { getEmployees } from "@/api/operations/employees/get_employees";
+import { createEmployee } from "@/api/operations/employees/create_employee";
+import { deleteEmployee } from "@/api/operations/employees/delete_employee";
+import { updateEmployee } from "@/api/operations/employees/update_employee";
 
-const customers = new Hono<{ Variables: JWTVariables }>();
+const employees = new Hono<{ Variables: JWTVariables }>();
 
 const idParamsValidationSchema = z.object({
   id: castToNumberSchema,
 });
 
-customers.get(
+employees.get(
   "/:id",
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await getCustomerById(id);
+    const result = await getEmployeeById(id);
     return c.json(result);
   }
 );
 
-customers.get("/", async (c) => {
-  const result = await getCustomers();
+employees.get("/", async (c) => {
+  const result = await getEmployees();
   return c.json(result);
 });
 
-const createCustomerValidationSchema = z.object({
+const createEmployeeValidationSchema = z.object({
   name: z.string().min(3).max(256),
-  phone: z.string(),
+  position: z.string().min(3).max(256),
 });
 
-customers.post(
+employees.post(
   "/",
-  zValidator("json", createCustomerValidationSchema),
+  zValidator("json", createEmployeeValidationSchema),
   async (c) => {
-    const { name, phone } = c.req.valid("json");
-    const result = await createCustomer({ name, phone });
+    const { name, position } = c.req.valid("json");
+    const result = await createEmployee({ name, position });
     return c.json(result);
   }
 );
 
-customers.delete(
+employees.delete(
   "/:id",
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await deleteCustomer(id);
+    const result = await deleteEmployee(id);
     return c.json(result);
   }
 );
 
-export { customers };
+const updateEmployeeValidationSchema = z.object({
+  employeeId: z.number().positive(),
+  name: z.string().min(3).max(256).optional(),
+  position: z.string().min(3).max(256).optional(),
+});
+
+employees.put(
+  "/",
+  zValidator("json", updateEmployeeValidationSchema),
+  async (c) => {
+    const { employeeId, name, position } = c.req.valid("json");
+    const result = await updateEmployee({ employeeId, name, position });
+    return c.json(result);
+  }
+);
+
+export { employees };

@@ -4,6 +4,7 @@ import { ParamsError } from "@/api/types/errors";
 import type { Purchase, PurchaseProduct } from "@prisma/client";
 
 interface UpdatePurchaseInput {
+  purchaseId: number;
   employeeId?: number;
   supplierId?: number;
   date?: Date;
@@ -20,11 +21,18 @@ interface UpdatePurchaseResponse extends Purchase {
 }
 
 async function updatePurchase(
-  purchaseId: number,
   input: UpdatePurchaseInput
 ): Promise<UpdatePurchaseResponse> {
   try {
-    const { products, ...updateData } = input;
+    const {
+      purchaseId,
+      amount,
+      date,
+      description,
+      employeeId,
+      products,
+      supplierId,
+    } = input;
 
     return await prisma.$transaction(async (prisma) => {
       // Get the current purchase products
@@ -36,7 +44,11 @@ async function updatePurchase(
       const updatedPurchase = await prisma.purchase.update({
         where: { id: purchaseId },
         data: {
-          ...updateData,
+          amount,
+          date,
+          description,
+          employeeId,
+          supplierId,
           products: products
             ? {
                 deleteMany: {},

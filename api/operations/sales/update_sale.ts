@@ -4,9 +4,9 @@ import { ParamsError } from "@/api/types/errors";
 import type { Sale, ProductSale, SaleStatusEnum } from "@prisma/client";
 
 interface UpdateSaleInput {
+  saleId: number;
   customerId?: number;
   status?: SaleStatusEnum;
-  lastUpdateDate?: Date;
   products?: Array<{
     productId: number;
     quantity: number;
@@ -17,13 +17,13 @@ interface UpdateSaleResponse extends Sale {
   products: ProductSale[];
 }
 
-async function updateSale(
-  saleId: number,
-  input: UpdateSaleInput
-): Promise<UpdateSaleResponse> {
+async function updateSale({
+  saleId,
+  customerId,
+  products,
+  status,
+}: UpdateSaleInput): Promise<UpdateSaleResponse> {
   try {
-    const { products, ...updateData } = input;
-
     return await prisma.$transaction(async (prisma) => {
       // Get the current sale products
       const currentSaleProducts = await prisma.productSale.findMany({
@@ -55,7 +55,9 @@ async function updateSale(
       const updatedSale = await prisma.sale.update({
         where: { id: saleId },
         data: {
-          ...updateData,
+          customerId,
+          lastUpdateDate: new Date(),
+          status,
           products: products
             ? {
                 deleteMany: {},
