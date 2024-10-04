@@ -8,7 +8,7 @@ async function getProductById(
   productId: number
 ): Promise<GetProductByIdResponse> {
   const product = await prisma.product.findUnique({
-    where: { id: productId },
+    where: { id: productId, enabled: true },
   });
 
   if (!product) {
@@ -17,3 +17,5 @@ async function getProductById(
 
   return { ...product };
 }
+
+export { getProductById };

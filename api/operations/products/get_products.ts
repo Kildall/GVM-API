@@ -9,7 +9,11 @@ interface GetAllProductsResponse {
 
 async function getProducts(): Promise<GetAllProductsResponse> {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      where: {
+        enabled: true,
+      },
+    });
     return { products };
   } catch (error) {
     log.error(error);

@@ -10,12 +10,15 @@ async function deleteProduct(
   productId: number
 ): Promise<DeleteProductResponse> {
   try {
-    const deletedProduct = await prisma.product.delete({
+    const deletedProduct = await prisma.product.updateMany({
       where: { id: productId },
+      data: {
+        enabled: false,
+      },
     });
 
-    if (!deletedProduct) {
-      throw new ParamsError("product not found");
+    if (deletedProduct.count === 0) {
+      throw new ParamsError("product not found or has already been deleted");
     }
 
     return { message: "product deleted successfully" };
@@ -27,3 +30,5 @@ async function deleteProduct(
     throw new ParamsError("could not delete product");
   }
 }
+
+export { deleteProduct };

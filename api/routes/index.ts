@@ -18,6 +18,7 @@ import { employees } from "@/api/routes/employees";
 import { purchases } from "@/api/routes/purchases";
 import { sales } from "@/api/routes/sales";
 import { suppliers } from "@/api/routes/suppliers";
+import { products } from "@/api/routes/products";
 
 type Variables = JWTVariables;
 
@@ -66,6 +67,7 @@ api.route("/auth", auth);
 api.route("/customers", customers);
 api.route("/deliveries", deliveries);
 api.route("/employees", employees);
+api.route("/products", products);
 api.route("/purchases", purchases);
 api.route("/sales", sales);
 api.route("/suppliers", suppliers);
