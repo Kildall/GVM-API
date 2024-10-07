@@ -1,3 +1,4 @@
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
 import { ParamsError } from "@/api/types/errors";
@@ -9,19 +10,23 @@ interface DeleteSaleResponse {
 async function deleteSale(saleId: number): Promise<DeleteSaleResponse> {
   try {
     return await prisma.$transaction(async (prisma) => {
-      // Fetch the sale products before deletion
-      const saleProducts = await prisma.productSale.findMany({
-        where: { saleId },
-      });
-
-      // Delete the sale (cascade will handle ProductSale deletion)
-      const deletedSale = await prisma.sale.delete({
+      const sale = await prisma.sale.findUnique({
         where: { id: saleId },
       });
 
-      if (!deletedSale) {
+      if (!sale) {
         throw new ParamsError("sale not found");
       }
+
+      // Fetch the sale products before deletion
+      const saleProducts = await prisma.productSale.findMany({
+        where: { saleId: sale.id },
+      });
+
+      // Delete the sale (cascade will handle ProductSale deletion)
+      await prisma.sale.delete({
+        where: { id: sale.id },
+      });
 
       // Update inventory for each product
       for (const product of saleProducts) {
@@ -38,6 +43,7 @@ async function deleteSale(saleId: number): Promise<DeleteSaleResponse> {
     if (error instanceof ParamsError) {
       throw error;
     }
+    log.error(error);
     throw new Error("failed to delete sale");
   }
 }

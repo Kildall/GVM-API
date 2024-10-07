@@ -5,7 +5,6 @@ import type { Sale, ProductSale, SaleStatusEnum } from "@prisma/client";
 
 interface UpdateSaleInput {
   saleId: number;
-  customerId?: number;
   status?: SaleStatusEnum;
   products?: Array<{
     productId: number;
@@ -19,7 +18,6 @@ interface UpdateSaleResponse extends Sale {
 
 async function updateSale({
   saleId,
-  customerId,
   products,
   status,
 }: UpdateSaleInput): Promise<UpdateSaleResponse> {
@@ -55,7 +53,6 @@ async function updateSale({
       const updatedSale = await prisma.sale.update({
         where: { id: saleId },
         data: {
-          customerId,
           lastUpdateDate: new Date(),
           status,
           products: products

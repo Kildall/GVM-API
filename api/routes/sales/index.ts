@@ -57,7 +57,6 @@ sales.delete(
 
 const updateSaleValidationSchema = z.object({
   saleId: z.number().positive(),
-  customerId: z.number().positive().optional(),
   products: z
     .array(
       z.object({
@@ -70,10 +69,9 @@ const updateSaleValidationSchema = z.object({
 });
 
 sales.put("/", zValidator("json", updateSaleValidationSchema), async (c) => {
-  const { saleId, customerId, products, status } = c.req.valid("json");
+  const { saleId, products, status } = c.req.valid("json");
   const result = await updateSale({
     saleId,
-    customerId,
     products,
     status,
   });

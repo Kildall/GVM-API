@@ -23,6 +23,8 @@ async function updateProduct({
   quantity,
 }: UpdatePurchaseInput): Promise<UpdateProductResponse> {
   try {
+    // TODO: Agregar validacion de montos de estos productos en ventas
+
     const product = await prisma.product.update({
       where: { id: productId, enabled: true },
       data: { brand, measure, name, price, quantity },

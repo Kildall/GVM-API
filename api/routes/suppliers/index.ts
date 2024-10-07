@@ -34,13 +34,13 @@ suppliers.get("/", async (c) => {
   return c.json(result);
 });
 
-const createCustomerValidationSchema = z.object({
+const createSupplierValidationSchema = z.object({
   name: z.string().min(3).max(256),
 });
 
 suppliers.post(
   "/",
-  zValidator("json", createCustomerValidationSchema),
+  zValidator("json", createSupplierValidationSchema),
   async (c) => {
     const { name } = c.req.valid("json");
     const result = await createSupplier({ name });

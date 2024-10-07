@@ -3,6 +3,7 @@ import { ParamsError } from "@/api/types/errors";
 import type { Address } from "@prisma/client";
 
 interface UpdateAddressInput {
+  addressId: number;
   name?: string;
   street1?: string;
   street2?: string;
@@ -10,19 +11,32 @@ interface UpdateAddressInput {
   state?: string;
   city?: string;
   details?: string;
-  enabled?: boolean;
 }
 
 interface UpdateAddressResponse extends Address {}
 
-async function updateAddress(
-  addressId: number,
-  input: UpdateAddressInput
-): Promise<UpdateAddressResponse> {
+async function updateAddress({
+  addressId,
+  city,
+  details,
+  name,
+  postalCode,
+  state,
+  street1,
+  street2,
+}: UpdateAddressInput): Promise<UpdateAddressResponse> {
   try {
     const updatedAddress = await prisma.address.update({
-      where: { id: addressId },
-      data: input,
+      where: { id: addressId, enabled: true },
+      data: {
+        city,
+        details,
+        name,
+        postalCode,
+        state,
+        street1,
+        street2,
+      },
     });
 
     if (!updatedAddress) {

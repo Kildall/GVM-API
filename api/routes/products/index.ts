@@ -75,7 +75,7 @@ const updatePurchaseValidationSchema = z.object({
   measure: z.number().positive().optional(),
   name: z.string().min(3).max(256).optional(),
   price: z.number().positive().optional(),
-  quantity: z.number().positive().optional(),
+  quantity: z.number().min(0).optional(),
 });
 
 products.put(

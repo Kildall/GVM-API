@@ -11,6 +11,7 @@ import { getAddressesByCustomer } from "@/api/operations/addresses/get_addresses
 import { getAddresses } from "@/api/operations/addresses/get_addresses";
 import { createAddress } from "@/api/operations/addresses/create_address";
 import { deleteAddress } from "@/api/operations/addresses/delete_address";
+import { updateAddress } from "@/api/operations/addresses/update_address";
 
 const addresses = new Hono<{ Variables: JWTVariables }>();
 
@@ -65,6 +66,45 @@ addresses.delete(
   async (c) => {
     const { id, customerId } = c.req.valid("param");
     const result = await deleteAddress({ addressId: id, customerId });
+    return c.json(result);
+  }
+);
+
+const updateAddressValidationSchema = z.object({
+  addressId: z.number().positive(),
+  name: z.string().min(3).max(256).optional(),
+  city: z.string().max(256).optional(),
+  postalCode: z.string().min(3).max(20).optional(),
+  state: z.string().min(3).max(256).optional(),
+  street1: z.string().min(3).max(256).optional(),
+  street2: z.string().min(3).max(256).optional(),
+  details: z.string().max(256).optional(),
+});
+
+addresses.put(
+  "/",
+  zValidator("json", updateAddressValidationSchema),
+  async (c) => {
+    const {
+      addressId,
+      city,
+      details,
+      name,
+      postalCode,
+      state,
+      street1,
+      street2,
+    } = c.req.valid("json");
+    const result = await updateAddress({
+      addressId,
+      city,
+      details,
+      name,
+      postalCode,
+      state,
+      street1,
+      street2,
+    });
     return c.json(result);
   }
 );

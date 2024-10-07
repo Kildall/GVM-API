@@ -17,7 +17,7 @@ async function updateCustomer({
 }: UpdateCustomerInput): Promise<UpdateCustomerResponse> {
   try {
     const updatedCustomer = await prisma.customer.update({
-      where: { id: customerId },
+      where: { id: customerId, enabled: true },
       data: {
         name,
         phone,
