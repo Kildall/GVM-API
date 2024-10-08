@@ -30,7 +30,6 @@ async function signup({ email, password, name }: SignupInput) {
         email,
         password: hashedPassword,
         name,
-        enabled: false,
       },
     });
 

@@ -220,9 +220,10 @@ model User {
   email       String       @db.VarChar(100)
   password    String       @db.VarChar(256)
   enabled     Boolean      @default(true)
+  verified    Boolean      @default(false)
   sessions    Session[]
   permissions EntityUser[]
-  Signature   Signature[]
+  signatures  Signature[]
 
   @@map("User")
 }

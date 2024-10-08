@@ -45,7 +45,9 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
 
     c.set("jwtPayload", validationResult.data);
 
-    const user = await prisma.user.findFirst({ where: { id } });
+    const user = await prisma.user.findFirst({
+      where: { id, verified: true, enabled: true },
+    });
     if (!user) {
       throw new Error("user not found");
     }

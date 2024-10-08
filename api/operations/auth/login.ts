@@ -20,11 +20,11 @@ interface LoginResponse {
 async function login({ email, password, remember, telemetrics }: LoginInput) {
   // Check if user exists
   const existingUser = await prisma.user.findFirst({
-    where: { email: email },
+    where: { email: email, enabled: true },
   });
 
   if (!existingUser) {
-    throw new AccessError("User doesnt exist");
+    throw new AccessError("user doesnt exist");
   }
 
   const hashedPassword = await hash(password);
@@ -33,7 +33,7 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
     hashedPassword !== existingUser.password ||
     email !== existingUser.email
   ) {
-    throw new AccessError("Incorrect password");
+    throw new AccessError("incorrect password");
   }
 
   const { jwt: token, session } = await createSession(
@@ -45,7 +45,7 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
   const response: LoginResponse = {
     expires: session.expiresAt,
     token,
-    verified: existingUser.enabled,
+    verified: existingUser.verified,
   };
 
   return response;

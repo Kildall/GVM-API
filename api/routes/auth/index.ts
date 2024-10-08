@@ -49,12 +49,9 @@ auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
 });
 
 auth.post("/logout", async (c) => {
-  if (!c.get("isAuthenticated")) {
-    throw new HTTPException(401, { message: "you are not logged in" });
-  }
   const jwtPayload = c.get("jwtPayload");
   if (!jwtPayload) {
-    throw new HTTPException(401, { message: "invalid session" });
+    throw new HTTPException(401, { message: "authentication not provided" });
   }
   const { sesion: sessionId, id: userId } = jwtPayload;
 

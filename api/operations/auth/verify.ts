@@ -49,7 +49,7 @@ async function verifyAccountToken({
     }
 
     // Check if the user exists and is not already verified
-    if (!signature.User || signature.User.enabled) {
+    if (!signature.User || signature.User.verified) {
       throw new ParamsError("user not found or already verified");
     }
 
@@ -57,7 +57,7 @@ async function verifyAccountToken({
       // Update the user's status to enabled
       await prisma.user.update({
         where: { id: signature.userId },
-        data: { enabled: true },
+        data: { verified: true },
       });
 
       await prisma.signature.update({

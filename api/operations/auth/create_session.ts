@@ -2,6 +2,7 @@ import { hash } from "@/api/helpers/hash";
 import { generateJWT } from "@/api/helpers/jwt";
 import { prisma } from "@/api/helpers/prisma";
 import type { RequestTelemetrics } from "@/api/types/api";
+import { ParamsError } from "@/api/types/errors";
 import type { Session, User } from "@prisma/client";
 import dayjs from "dayjs";
 
@@ -15,6 +16,10 @@ async function createSession(
   telemetrics: RequestTelemetrics,
   remember: boolean
 ): Promise<CreateSesionResult> {
+  if (!user.enabled) {
+    throw new ParamsError("unable to create session for user");
+  }
+
   const now = dayjs();
   const sesionDuration = remember ? 7 : 1; // Duration in days
 
