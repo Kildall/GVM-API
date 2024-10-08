@@ -8,6 +8,8 @@ import { getPurchases } from "@/api/operations/purchases/get_purchases";
 import { createPurchase } from "@/api/operations/purchases/create_purchase";
 import { deletePurchase } from "@/api/operations/purchases/delete_purchase";
 import { updatePurchase } from "@/api/operations/purchases/update_purchase";
+import { guard } from "@/api/middlewares/guard";
+import { EntityType } from "@prisma/client";
 
 const purchases = new Hono<{ Variables: JWTVariables }>();
 
@@ -17,6 +19,7 @@ const idParamsValidationSchema = z.object({
 
 purchases.get(
   "/:id",
+  guard("purchase.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -25,10 +28,14 @@ purchases.get(
   }
 );
 
-purchases.get("/", async (c) => {
-  const result = await getPurchases();
-  return c.json(result);
-});
+purchases.get(
+  "/",
+  guard("purchase.browse", EntityType.Permission),
+  async (c) => {
+    const result = await getPurchases();
+    return c.json(result);
+  }
+);
 
 // employeeId, supplierId, date, amount
 const createPurchaseValidationSchema = z.object({
@@ -47,6 +54,7 @@ const createPurchaseValidationSchema = z.object({
 
 purchases.post(
   "/",
+  guard("purchase.add", EntityType.Permission),
   zValidator("json", createPurchaseValidationSchema),
   async (c) => {
     const { employeeId, amount, date, description, products, supplierId } =
@@ -65,6 +73,7 @@ purchases.post(
 
 purchases.delete(
   "/:id",
+  guard("purchase.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -92,6 +101,7 @@ const updatePurchaseValidationSchema = z.object({
 
 purchases.put(
   "/",
+  guard("purchase.edit", EntityType.Permission),
   zValidator("json", updatePurchaseValidationSchema),
   async (c) => {
     const {

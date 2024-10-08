@@ -4,7 +4,6 @@ import { sendVerificationEmail } from "@/api/operations/email/send_verification_
 import { ParamsError } from "@/api/types/errors.ts";
 import { AccountAction } from "@prisma/client";
 import dayjs from "dayjs";
-import { sign } from "hono/jwt";
 
 interface SignupInput {
   email: string;

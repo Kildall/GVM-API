@@ -12,6 +12,8 @@ import { getSuppliers } from "@/api/operations/suppliers/get_suppliers";
 import { createSupplier } from "@/api/operations/suppliers/create_supplier";
 import { deleteSupplier } from "@/api/operations/suppliers/delete_supplier";
 import { updateSupplier } from "@/api/operations/suppliers/update_suppliers";
+import { EntityType } from "@prisma/client";
+import { guard } from "@/api/middlewares/guard";
 
 const suppliers = new Hono<{ Variables: JWTVariables }>();
 
@@ -21,6 +23,7 @@ const idParamsValidationSchema = z.object({
 
 suppliers.get(
   "/:id",
+  guard("supplier.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -29,10 +32,14 @@ suppliers.get(
   }
 );
 
-suppliers.get("/", async (c) => {
-  const result = await getSuppliers();
-  return c.json(result);
-});
+suppliers.get(
+  "/",
+  guard("supplier.browse", EntityType.Permission),
+  async (c) => {
+    const result = await getSuppliers();
+    return c.json(result);
+  }
+);
 
 const createSupplierValidationSchema = z.object({
   name: z.string().min(3).max(256),
@@ -40,6 +47,7 @@ const createSupplierValidationSchema = z.object({
 
 suppliers.post(
   "/",
+  guard("supplier.add", EntityType.Permission),
   zValidator("json", createSupplierValidationSchema),
   async (c) => {
     const { name } = c.req.valid("json");
@@ -50,6 +58,7 @@ suppliers.post(
 
 suppliers.delete(
   "/:id",
+  guard("supplier.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -65,6 +74,7 @@ const updateSupplierValidationSchema = z.object({
 
 suppliers.put(
   "/",
+  guard("supplier.edit", EntityType.Permission),
   zValidator("json", updateSupplierValidationSchema),
   async (c) => {
     const { supplierId, name } = c.req.valid("json");

@@ -8,6 +8,7 @@ import type { RequestTelemetrics } from "@/api/types/api";
 import { HTTPException } from "hono/http-exception";
 import { logout } from "@/api/operations/auth/logout";
 import type { JWTVariables } from "@/api/middlewares/auth";
+import { verifyAccountToken } from "@/api/operations/auth/verify";
 
 const auth = new Hono<{ Variables: JWTVariables }>();
 
@@ -60,5 +61,30 @@ auth.post("/logout", async (c) => {
   const result = await logout({ userId, sessionId });
   return c.json(result);
 });
+
+const signatureValidationSchema = z.object({
+  signature: z.string().min(16).max(512),
+});
+
+auth.get(
+  "/verify/:signature",
+  zValidator("param", signatureValidationSchema),
+  async (c) => {
+    const { signature } = c.req.valid("param");
+    const connInfo = getConnInfo(c);
+    const telemetrics: RequestTelemetrics = {
+      ip: connInfo.remote.address || "Unknown",
+      userAgent: c.req.header("User-Agent") || "Unknown",
+    };
+
+    const result = await verifyAccountToken({
+      ip: telemetrics.ip,
+      userAgent: telemetrics.userAgent,
+      token: signature,
+    });
+
+    return c.json(result);
+  }
+);
 
 export { auth };

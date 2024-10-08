@@ -8,7 +8,8 @@ import { getSales } from "@/api/operations/sales/get_sales";
 import { createSale } from "@/api/operations/sales/create_sale";
 import { deleteSale } from "@/api/operations/sales/delete_sale";
 import { updateSale } from "@/api/operations/sales/update_sale";
-import { SaleStatusEnum } from "@prisma/client";
+import { EntityType, SaleStatusEnum } from "@prisma/client";
+import { guard } from "@/api/middlewares/guard";
 
 const sales = new Hono<{ Variables: JWTVariables }>();
 
@@ -16,13 +17,18 @@ const idParamsValidationSchema = z.object({
   id: castToNumberSchema,
 });
 
-sales.get("/:id", zValidator("param", idParamsValidationSchema), async (c) => {
-  const { id } = c.req.valid("param");
-  const result = await getSaleById(id);
-  return c.json(result);
-});
+sales.get(
+  "/:id",
+  guard("sale.read", EntityType.Permission),
+  zValidator("param", idParamsValidationSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const result = await getSaleById(id);
+    return c.json(result);
+  }
+);
 
-sales.get("/", async (c) => {
+sales.get("/", guard("sale.browse", EntityType.Permission), async (c) => {
   const result = await getSales();
   return c.json(result);
 });
@@ -39,14 +45,20 @@ const createSaleValidationSchema = z.object({
   startDate: z.coerce.date(),
 });
 
-sales.post("/", zValidator("json", createSaleValidationSchema), async (c) => {
-  const { customerId, products, startDate } = c.req.valid("json");
-  const result = await createSale({ customerId, products, startDate });
-  return c.json(result);
-});
+sales.post(
+  "/",
+  guard("sale.add", EntityType.Permission),
+  zValidator("json", createSaleValidationSchema),
+  async (c) => {
+    const { customerId, products, startDate } = c.req.valid("json");
+    const result = await createSale({ customerId, products, startDate });
+    return c.json(result);
+  }
+);
 
 sales.delete(
   "/:id",
+  guard("sale.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -68,14 +80,19 @@ const updateSaleValidationSchema = z.object({
   status: z.nativeEnum(SaleStatusEnum).optional(),
 });
 
-sales.put("/", zValidator("json", updateSaleValidationSchema), async (c) => {
-  const { saleId, products, status } = c.req.valid("json");
-  const result = await updateSale({
-    saleId,
-    products,
-    status,
-  });
-  return c.json(result);
-});
+sales.put(
+  "/",
+  guard("sale.edit", EntityType.Permission),
+  zValidator("json", updateSaleValidationSchema),
+  async (c) => {
+    const { saleId, products, status } = c.req.valid("json");
+    const result = await updateSale({
+      saleId,
+      products,
+      status,
+    });
+    return c.json(result);
+  }
+);
 
 export { sales };

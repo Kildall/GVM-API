@@ -12,6 +12,8 @@ import { getAddresses } from "@/api/operations/addresses/get_addresses";
 import { createAddress } from "@/api/operations/addresses/create_address";
 import { deleteAddress } from "@/api/operations/addresses/delete_address";
 import { updateAddress } from "@/api/operations/addresses/update_address";
+import { guard } from "@/api/middlewares/guard";
+import { EntityType } from "@prisma/client";
 
 const addresses = new Hono<{ Variables: JWTVariables }>();
 
@@ -21,6 +23,7 @@ const idParamsValidationSchema = z.object({
 
 addresses.get(
   "/customer/:id",
+  guard("address.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -29,10 +32,14 @@ addresses.get(
   }
 );
 
-addresses.get("/", async (c) => {
-  const result = await getAddresses();
-  return c.json(result);
-});
+addresses.get(
+  "/",
+  guard("address.browse", EntityType.Permission),
+  async (c) => {
+    const result = await getAddresses();
+    return c.json(result);
+  }
+);
 
 const createAddressValidationSchema = z.object({
   name: z.string().min(3).max(256),
@@ -44,9 +51,9 @@ const createAddressValidationSchema = z.object({
   details: z.string().max(256).optional(),
   customerId: z.number().positive(),
 });
-
 addresses.post(
   "/",
+  guard("address.add", EntityType.Permission),
   zValidator("json", createAddressValidationSchema),
   async (c) => {
     const addressData = c.req.valid("json");
@@ -62,6 +69,7 @@ const deleteAddressValidationSchema = z.object({
 
 addresses.delete(
   "/:id/customer/:customerId",
+  guard("address.delete", EntityType.Permission),
   zValidator("param", deleteAddressValidationSchema),
   async (c) => {
     const { id, customerId } = c.req.valid("param");
@@ -83,6 +91,7 @@ const updateAddressValidationSchema = z.object({
 
 addresses.put(
   "/",
+  guard("address.edit", EntityType.Permission),
   zValidator("json", updateAddressValidationSchema),
   async (c) => {
     const {

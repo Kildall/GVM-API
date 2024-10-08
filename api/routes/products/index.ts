@@ -13,6 +13,8 @@ import { getProducts } from "@/api/operations/products/get_products";
 import { createProduct } from "@/api/operations/products/create_product";
 import { deleteProduct } from "@/api/operations/products/delete_product";
 import { updateProduct } from "@/api/operations/products/update_product";
+import { guard } from "@/api/middlewares/guard";
+import { EntityType } from "@prisma/client";
 
 const products = new Hono<{ Variables: JWTVariables }>();
 
@@ -22,6 +24,7 @@ const idParamsValidationSchema = z.object({
 
 products.get(
   "/:id",
+  guard("product.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -30,7 +33,7 @@ products.get(
   }
 );
 
-products.get("/", async (c) => {
+products.get("/", guard("product.browse", EntityType.Permission), async (c) => {
   const result = await getProducts();
   return c.json(result);
 });
@@ -45,6 +48,7 @@ const createProductValidationSchema = z.object({
 
 products.post(
   "/",
+  guard("product.add", EntityType.Permission),
   zValidator("json", createProductValidationSchema),
   async (c) => {
     const { brand, measure, name, price, quantity } = c.req.valid("json");
@@ -61,6 +65,7 @@ products.post(
 
 products.delete(
   "/:id",
+  guard("product.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -80,6 +85,7 @@ const updatePurchaseValidationSchema = z.object({
 
 products.put(
   "/",
+  guard("product.edit", EntityType.Permission),
   zValidator("json", updatePurchaseValidationSchema),
   async (c) => {
     const { productId, brand, measure, name, price, quantity } =

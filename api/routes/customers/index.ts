@@ -8,6 +8,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import { updateCustomer } from "@/api/operations/customers/update_customer";
+import { guard } from "@/api/middlewares/guard";
+import { EntityType } from "@prisma/client";
 
 const customers = new Hono<{ Variables: JWTVariables }>();
 
@@ -17,6 +19,7 @@ const idParamsValidationSchema = z.object({
 
 customers.get(
   "/:id",
+  guard("customer.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -25,10 +28,14 @@ customers.get(
   }
 );
 
-customers.get("/", async (c) => {
-  const result = await getCustomers();
-  return c.json(result);
-});
+customers.get(
+  "/",
+  guard("customer.browse", EntityType.Permission),
+  async (c) => {
+    const result = await getCustomers();
+    return c.json(result);
+  }
+);
 
 const createCustomerValidationSchema = z.object({
   name: z.string().min(3).max(256),
@@ -37,6 +44,7 @@ const createCustomerValidationSchema = z.object({
 
 customers.post(
   "/",
+  guard("customer.add", EntityType.Permission),
   zValidator("json", createCustomerValidationSchema),
   async (c) => {
     const { name, phone } = c.req.valid("json");
@@ -47,6 +55,7 @@ customers.post(
 
 customers.delete(
   "/:id",
+  guard("customer.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -63,6 +72,7 @@ const updateCustomerValidationSchema = z.object({
 
 customers.put(
   "/",
+  guard("customer.edit", EntityType.Permission),
   zValidator("json", updateCustomerValidationSchema),
   async (c) => {
     const { customerId, name, phone } = c.req.valid("json");

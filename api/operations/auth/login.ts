@@ -1,7 +1,5 @@
-import { generateJWT } from "@/api/helpers/jwt.ts";
 import { AccessError } from "@/api/types/errors.ts";
 import { prisma } from "@/api/helpers/prisma.ts";
-import { createHash } from "node:crypto";
 import { createSession } from "@/api/operations/auth/create_session";
 import type { RequestTelemetrics } from "@/api/types/api";
 import { hash } from "@/api/helpers/hash";

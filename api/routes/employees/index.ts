@@ -8,6 +8,8 @@ import { getEmployees } from "@/api/operations/employees/get_employees";
 import { createEmployee } from "@/api/operations/employees/create_employee";
 import { deleteEmployee } from "@/api/operations/employees/delete_employee";
 import { updateEmployee } from "@/api/operations/employees/update_employee";
+import { guard } from "@/api/middlewares/guard";
+import { EntityType } from "@prisma/client";
 
 const employees = new Hono<{ Variables: JWTVariables }>();
 
@@ -17,6 +19,7 @@ const idParamsValidationSchema = z.object({
 
 employees.get(
   "/:id",
+  guard("employee.read", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -25,10 +28,14 @@ employees.get(
   }
 );
 
-employees.get("/", async (c) => {
-  const result = await getEmployees();
-  return c.json(result);
-});
+employees.get(
+  "/",
+  guard("employee.browse", EntityType.Permission),
+  async (c) => {
+    const result = await getEmployees();
+    return c.json(result);
+  }
+);
 
 const createEmployeeValidationSchema = z.object({
   name: z.string().min(3).max(256),
@@ -37,6 +44,7 @@ const createEmployeeValidationSchema = z.object({
 
 employees.post(
   "/",
+  guard("employee.add", EntityType.Permission),
   zValidator("json", createEmployeeValidationSchema),
   async (c) => {
     const { name, position } = c.req.valid("json");
@@ -47,6 +55,7 @@ employees.post(
 
 employees.delete(
   "/:id",
+  guard("employee.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -63,6 +72,7 @@ const updateEmployeeValidationSchema = z.object({
 
 employees.put(
   "/",
+  guard("employee.edit", EntityType.Permission),
   zValidator("json", updateEmployeeValidationSchema),
   async (c) => {
     const { employeeId, name, position } = c.req.valid("json");
