@@ -195,7 +195,7 @@ enum EntityType {
 
 model Entity {
   id          Int          @id @default(autoincrement())
-  name        String
+  name        String       @unique
   type        EntityType
   entityUser  EntityUser[]
   permissions Entity[]     @relation("PermissionRole")
@@ -208,7 +208,7 @@ model EntityUser {
   userId   Int
   entityId Int
   user     User   @relation(fields: [userId], references: [id])
-  entity   Entity @relation(fields: [entityId], references: [id])
+  entity   Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@id([userId, entityId])
   @@map("EntityUser")

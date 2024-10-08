@@ -19,6 +19,7 @@ import { purchases } from "@/api/routes/purchases";
 import { sales } from "@/api/routes/sales";
 import { suppliers } from "@/api/routes/suppliers";
 import { products } from "@/api/routes/products";
+import { admin } from "@/api/routes/admin";
 
 type Variables = JWTVariables;
 
@@ -63,6 +64,7 @@ api.onError((error, c) => {
 });
 
 api.route("/addresses", addresses);
+api.route("/admin", admin);
 api.route("/auth", auth);
 api.route("/customers", customers);
 api.route("/deliveries", deliveries);

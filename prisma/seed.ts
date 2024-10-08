@@ -108,6 +108,15 @@ async function main() {
     },
   });
 
+  const user1 = await prisma.user.create({
+    data: {
+      email: "pedro.estu1@gmail.com",
+      name: "Pedro Bustos",
+      password:
+        "dc9ebe0f939a0b9907fc3f89d830cf92c46d4d8ee40c814751fcfa3febb77e9b69498f9466dbb6fb7ff5955da006d25355e0eb2f4d8e12e9e6c494ddfdd8d6a1",
+    },
+  });
+
   console.log("Datos de muestra creados exitosamente!");
 }
 
