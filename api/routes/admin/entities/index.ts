@@ -31,7 +31,7 @@ entities.get("/:id", zValidator("param", validateIdSchema), async (c) => {
   return c.json(result);
 });
 
-entities.post("/hierarchy", async (c) => {
+entities.get("/hierarchy", async (c) => {
   const result = await getEntitiesHierarchy();
   return c.json(result);
 });
