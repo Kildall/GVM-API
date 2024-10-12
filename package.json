@@ -9,14 +9,15 @@
     "server": "bun run prisma:generate && bun server.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prisma": "5.20.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.3.0",
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "5.20.0",
     "@types/node": "^22.7.2",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",

@@ -12,7 +12,7 @@ interface SignupInput {
 }
 
 async function signup({ email, password, name }: SignupInput) {
-  const existingUser = await prisma.user.findFirst({
+  const existingUser = await prisma.user.findUnique({
     where: { email: email },
   });
 
