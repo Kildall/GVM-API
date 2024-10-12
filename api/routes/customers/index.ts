@@ -9,7 +9,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { updateCustomer } from "@/api/operations/customers/update_customer";
 import { guard } from "@/api/middlewares/guard";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const customers = new Hono<{ Variables: JWTVariables }>();
 
@@ -46,6 +47,7 @@ customers.post(
   "/",
   guard("customer.add", EntityType.Permission),
   zValidator("json", createCustomerValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.CUSTOMER),
   async (c) => {
     const { name, phone } = c.req.valid("json");
     const result = await createCustomer({ name, phone });
@@ -57,6 +59,7 @@ customers.delete(
   "/:id",
   guard("customer.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.CUSTOMER),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteCustomer(id);
@@ -74,6 +77,7 @@ customers.put(
   "/",
   guard("customer.edit", EntityType.Permission),
   zValidator("json", updateCustomerValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.CUSTOMER),
   async (c) => {
     const { customerId, name, phone } = c.req.valid("json");
     const result = await updateCustomer({ customerId, name, phone });

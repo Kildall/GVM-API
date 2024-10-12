@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { JwtVariables } from "hono/jwt";
 import { cors } from "hono/cors";
 import { auth } from "@/api/routes/auth/index.ts";
-import logger from "@/api/middlewares/logger.ts";
+import { logger } from "@/api/middlewares/logger.ts";
 import { responseFormatter } from "@/api/middlewares/formatter.ts";
 import { HTTPException } from "hono/http-exception";
 import type { APIResponse } from "@/api/types/api.ts";

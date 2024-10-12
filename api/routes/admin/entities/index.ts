@@ -7,12 +7,13 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import { addEntityToUser } from "@/api/operations/entities/add_entity_to_user";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
 import { createEntity } from "@/api/operations/entities/create_entity";
 import { updateEntity } from "@/api/operations/entities/update_entity";
 import { deleteEntity } from "@/api/operations/entities/delete_entity";
 import { getEntityUsers } from "@/api/operations/entities/get_entity_users";
 import { removeEntityFromUser } from "@/api/operations/entities/remove_entity_from_user";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const entities = new Hono<{ Variables: JWTVariables }>();
 
@@ -50,6 +51,7 @@ const validateCreateEntitySchema = z.object({
 entities.post(
   "/",
   zValidator("json", validateCreateEntitySchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.ENTITY),
   async (c) => {
     const { name, type } = c.req.valid("json");
     const result = await createEntity({ name, type });
@@ -63,17 +65,27 @@ const validateUpdateEntitySchema = z.object({
   childEntityIds: z.array(z.number()).optional(),
 });
 
-entities.put("/", zValidator("json", validateUpdateEntitySchema), async (c) => {
-  const { entityId, childEntityIds, name } = c.req.valid("json");
-  const result = await updateEntity({ entityId, childEntityIds, name });
-  return c.json(result);
-});
+entities.put(
+  "/",
+  zValidator("json", validateUpdateEntitySchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.ENTITY),
+  async (c) => {
+    const { entityId, childEntityIds, name } = c.req.valid("json");
+    const result = await updateEntity({ entityId, childEntityIds, name });
+    return c.json(result);
+  }
+);
 
-entities.delete("/:id", zValidator("param", validateIdSchema), async (c) => {
-  const { id } = c.req.valid("param");
-  const result = await deleteEntity({ id });
-  return c.json(result);
-});
+entities.delete(
+  "/:id",
+  audit(AuditAction.DELETE, AuditEntityTypes.ENTITY),
+  zValidator("param", validateIdSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const result = await deleteEntity({ id });
+    return c.json(result);
+  }
+);
 
 const validateAddEntityToUserSchema = z.object({
   entityId: z.number().positive(),
@@ -83,6 +95,7 @@ const validateAddEntityToUserSchema = z.object({
 entities.post(
   "/user",
   zValidator("json", validateAddEntityToUserSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.ENTITY_USER),
   async (c) => {
     const { entityId, userId } = c.req.valid("json");
     const result = await addEntityToUser({ userId, entityId });
@@ -98,6 +111,7 @@ const validateRemoveEntityToUserSchema = z.object({
 entities.delete(
   "/user",
   zValidator("json", validateRemoveEntityToUserSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.ENTITY_USER),
   async (c) => {
     const { entityId, userId } = c.req.valid("json");
     const result = await removeEntityFromUser({ userId, entityId });

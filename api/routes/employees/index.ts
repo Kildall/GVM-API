@@ -9,7 +9,8 @@ import { createEmployee } from "@/api/operations/employees/create_employee";
 import { deleteEmployee } from "@/api/operations/employees/delete_employee";
 import { updateEmployee } from "@/api/operations/employees/update_employee";
 import { guard } from "@/api/middlewares/guard";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const employees = new Hono<{ Variables: JWTVariables }>();
 
@@ -46,6 +47,7 @@ employees.post(
   "/",
   guard("employee.add", EntityType.Permission),
   zValidator("json", createEmployeeValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.EMPLOYEE),
   async (c) => {
     const { name, position } = c.req.valid("json");
     const result = await createEmployee({ name, position });
@@ -57,6 +59,7 @@ employees.delete(
   "/:id",
   guard("employee.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.EMPLOYEE),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteEmployee(id);
@@ -74,6 +77,7 @@ employees.put(
   "/",
   guard("employee.edit", EntityType.Permission),
   zValidator("json", updateEmployeeValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.EMPLOYEE),
   async (c) => {
     const { employeeId, name, position } = c.req.valid("json");
     const result = await updateEmployee({ employeeId, name, position });

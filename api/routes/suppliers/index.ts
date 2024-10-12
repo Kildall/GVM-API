@@ -12,8 +12,9 @@ import { getSuppliers } from "@/api/operations/suppliers/get_suppliers";
 import { createSupplier } from "@/api/operations/suppliers/create_supplier";
 import { deleteSupplier } from "@/api/operations/suppliers/delete_supplier";
 import { updateSupplier } from "@/api/operations/suppliers/update_suppliers";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
 import { guard } from "@/api/middlewares/guard";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const suppliers = new Hono<{ Variables: JWTVariables }>();
 
@@ -49,6 +50,7 @@ suppliers.post(
   "/",
   guard("supplier.add", EntityType.Permission),
   zValidator("json", createSupplierValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.SUPPLIER),
   async (c) => {
     const { name } = c.req.valid("json");
     const result = await createSupplier({ name });
@@ -60,6 +62,7 @@ suppliers.delete(
   "/:id",
   guard("supplier.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.SUPPLIER),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteSupplier(id);
@@ -76,6 +79,7 @@ suppliers.put(
   "/",
   guard("supplier.edit", EntityType.Permission),
   zValidator("json", updateSupplierValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.SUPPLIER),
   async (c) => {
     const { supplierId, name } = c.req.valid("json");
     const result = await updateSupplier({

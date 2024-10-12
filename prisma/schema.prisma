@@ -224,6 +224,7 @@ model User {
   sessions    Session[]
   permissions EntityUser[]
   signatures  Signature[]
+  audits      Audit[]
 
   @@map("User")
 }
@@ -254,4 +255,23 @@ model Signature {
   expiresAt DateTime
   User      User          @relation(fields: [userId], references: [id])
   userId    Int
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model Audit {
+  id          Int         @id @default(autoincrement())
+  timestamp   DateTime    @default(now())
+  action      AuditAction
+  entityType  String // The name of the model being audited
+  userId      Int // The ID of the user who performed the action
+  user        User        @relation(fields: [userId], references: [id])
+  data        Json? // Store the data from the action
+  description String? // Optional description of the action
+
+  @@map("Audit")
 }

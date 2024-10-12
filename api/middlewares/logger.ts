@@ -11,13 +11,16 @@ const logger = createMiddleware(async (c, next) => {
   const ip = connInfo.remote.address;
 
   // Log request details
-  log.debug({
-    type: "request",
-    method,
-    url,
-    ip,
-    headers: c.req.raw.headers,
-  }, "incoming request");
+  log.debug(
+    {
+      type: "request",
+      method,
+      url,
+      ip,
+      headers: c.req.raw.headers,
+    },
+    "incoming request"
+  );
 
   await next();
 
@@ -25,15 +28,18 @@ const logger = createMiddleware(async (c, next) => {
   const responseTime = dayjs().diff(requestStartTime);
 
   // Log response details
-  log.debug({
-    type: "response",
-    method,
-    url,
-    ip,
-    statusCode: c.res.status,
-    responseTime,
-    responseHeaders: c.res.headers,
-  }, "outgoing response");
+  log.debug(
+    {
+      type: "response",
+      method,
+      url,
+      ip,
+      statusCode: c.res.status,
+      responseTime,
+      responseHeaders: c.res.headers,
+    },
+    "outgoing response"
+  );
 });
 
-export default logger;
+export { logger };

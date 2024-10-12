@@ -8,6 +8,8 @@ import { getUserById } from "@/api/operations/users/get_user_by_id";
 import { getUsers } from "@/api/operations/users/get_users";
 import { updateUser } from "@/api/operations/users/update_user";
 import { deleteUser } from "@/api/operations/users/delete_user";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { AuditAction } from "@prisma/client";
 
 const users = new Hono<{ Variables: JWTVariables }>();
 
@@ -34,14 +36,25 @@ const validateCreateUserSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-users.post("/", zValidator("json", validateCreateUserSchema), async (c) => {
-  const { name, email, password, enabled, verified } = c.req.valid("json");
-  const result = await createUser({ name, email, password, enabled, verified });
-  return c.json(result);
-});
+users.post(
+  "/",
+  zValidator("json", validateCreateUserSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.USER),
+  async (c) => {
+    const { name, email, password, enabled, verified } = c.req.valid("json");
+    const result = await createUser({
+      name,
+      email,
+      password,
+      enabled,
+      verified,
+    });
+    return c.json(result);
+  }
+);
 
 const validateUpdateUserSchema = z.object({
-  id: z.number().positive(),
+  userId: z.number().positive(),
   name: z.string().min(3).max(256).optional(),
   email: z.string().email().max(100).optional(),
   password: z.string().min(8).max(256).optional(),
@@ -49,23 +62,34 @@ const validateUpdateUserSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-users.put("/", zValidator("json", validateUpdateUserSchema), async (c) => {
-  const { id, name, email, password, enabled, verified } = c.req.valid("json");
-  const result = await updateUser({
-    id,
-    name,
-    email,
-    password,
-    enabled,
-    verified,
-  });
-  return c.json(result);
-});
+users.put(
+  "/",
+  zValidator("json", validateUpdateUserSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.USER),
+  async (c) => {
+    const { userId, name, email, password, enabled, verified } =
+      c.req.valid("json");
+    const result = await updateUser({
+      userId,
+      name,
+      email,
+      password,
+      enabled,
+      verified,
+    });
+    return c.json(result);
+  }
+);
 
-users.delete("/:id", zValidator("param", validateIdSchema), async (c) => {
-  const { id } = c.req.valid("param");
-  const result = await deleteUser({ id });
-  return c.json(result);
-});
+users.delete(
+  "/:id",
+  zValidator("param", validateIdSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.USER),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const result = await deleteUser({ id });
+    return c.json(result);
+  }
+);
 
 export { users };

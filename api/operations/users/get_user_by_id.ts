@@ -23,7 +23,7 @@ async function getUserById({
   });
 
   if (!user) {
-    throw new ParamsError("User not found");
+    throw new ParamsError("user not found");
   }
 
   return { user };

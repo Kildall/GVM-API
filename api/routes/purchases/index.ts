@@ -9,7 +9,8 @@ import { createPurchase } from "@/api/operations/purchases/create_purchase";
 import { deletePurchase } from "@/api/operations/purchases/delete_purchase";
 import { updatePurchase } from "@/api/operations/purchases/update_purchase";
 import { guard } from "@/api/middlewares/guard";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const purchases = new Hono<{ Variables: JWTVariables }>();
 
@@ -56,6 +57,7 @@ purchases.post(
   "/",
   guard("purchase.add", EntityType.Permission),
   zValidator("json", createPurchaseValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.PURCHASE),
   async (c) => {
     const { employeeId, amount, date, description, products, supplierId } =
       c.req.valid("json");
@@ -75,6 +77,7 @@ purchases.delete(
   "/:id",
   guard("purchase.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.PURCHASE),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deletePurchase(id);
@@ -103,6 +106,7 @@ purchases.put(
   "/",
   guard("purchase.edit", EntityType.Permission),
   zValidator("json", updatePurchaseValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.PURCHASE),
   async (c) => {
     const {
       purchaseId,

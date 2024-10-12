@@ -8,8 +8,9 @@ import { getSales } from "@/api/operations/sales/get_sales";
 import { createSale } from "@/api/operations/sales/create_sale";
 import { deleteSale } from "@/api/operations/sales/delete_sale";
 import { updateSale } from "@/api/operations/sales/update_sale";
-import { EntityType, SaleStatusEnum } from "@prisma/client";
+import { AuditAction, EntityType, SaleStatusEnum } from "@prisma/client";
 import { guard } from "@/api/middlewares/guard";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const sales = new Hono<{ Variables: JWTVariables }>();
 
@@ -49,6 +50,7 @@ sales.post(
   "/",
   guard("sale.add", EntityType.Permission),
   zValidator("json", createSaleValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.SALE),
   async (c) => {
     const { customerId, products, startDate } = c.req.valid("json");
     const result = await createSale({ customerId, products, startDate });
@@ -60,6 +62,7 @@ sales.delete(
   "/:id",
   guard("sale.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.SALE),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteSale(id);
@@ -84,6 +87,7 @@ sales.put(
   "/",
   guard("sale.edit", EntityType.Permission),
   zValidator("json", updateSaleValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.SALE),
   async (c) => {
     const { saleId, products, status } = c.req.valid("json");
     const result = await updateSale({

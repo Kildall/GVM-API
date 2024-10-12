@@ -4,7 +4,7 @@ import { ParamsError } from "@/api/types/errors";
 import type { User } from "@prisma/client";
 
 interface UpdateUserInput {
-  id: number;
+  userId: number;
   name?: string;
   email?: string;
   password?: string;
@@ -17,7 +17,7 @@ interface UpdateUserResponse {
 }
 
 async function updateUser({
-  id,
+  userId,
   name,
   email,
   password,
@@ -25,7 +25,7 @@ async function updateUser({
   verified,
 }: UpdateUserInput): Promise<UpdateUserResponse> {
   const existingUser = await prisma.user.findUnique({
-    where: { id },
+    where: { id: userId },
   });
 
   if (!existingUser) {
@@ -47,7 +47,7 @@ async function updateUser({
   }
 
   const updatedUser = await prisma.user.update({
-    where: { id },
+    where: { id: userId },
     data: {
       name,
       email,

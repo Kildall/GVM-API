@@ -13,7 +13,8 @@ import { createAddress } from "@/api/operations/addresses/create_address";
 import { deleteAddress } from "@/api/operations/addresses/delete_address";
 import { updateAddress } from "@/api/operations/addresses/update_address";
 import { guard } from "@/api/middlewares/guard";
-import { EntityType } from "@prisma/client";
+import { AuditAction, EntityType } from "@prisma/client";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 
 const addresses = new Hono<{ Variables: JWTVariables }>();
 
@@ -55,6 +56,7 @@ addresses.post(
   "/",
   guard("address.add", EntityType.Permission),
   zValidator("json", createAddressValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.ADDRESS),
   async (c) => {
     const addressData = c.req.valid("json");
     const result = await createAddress(addressData);
@@ -71,6 +73,7 @@ addresses.delete(
   "/:id/customer/:customerId",
   guard("address.delete", EntityType.Permission),
   zValidator("param", deleteAddressValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.ADDRESS),
   async (c) => {
     const { id, customerId } = c.req.valid("param");
     const result = await deleteAddress({ addressId: id, customerId });
@@ -93,6 +96,7 @@ addresses.put(
   "/",
   guard("address.edit", EntityType.Permission),
   zValidator("json", updateAddressValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.ADDRESS),
   async (c) => {
     const {
       addressId,

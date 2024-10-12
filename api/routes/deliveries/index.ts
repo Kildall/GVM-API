@@ -1,4 +1,5 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
 import { guard } from "@/api/middlewares/guard";
 import { createDelivery } from "@/api/operations/deliveries/create_delivery";
@@ -7,7 +8,7 @@ import { getDeliveries } from "@/api/operations/deliveries/get_deliveries";
 import { getDeliveryById } from "@/api/operations/deliveries/get_delivery_by_id";
 import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
 import { zValidator } from "@hono/zod-validator";
-import { DeliveryStatusEnum, EntityType } from "@prisma/client";
+import { AuditAction, DeliveryStatusEnum, EntityType } from "@prisma/client";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -48,6 +49,7 @@ deliveries.post(
   "/",
   guard("delivery.add", EntityType.Permission),
   zValidator("json", createDeliveryValidationSchema),
+  audit(AuditAction.CREATE, AuditEntityTypes.DELIVERY),
   async (c) => {
     const { saleId, addressId, deliveryPersonId, startDate } =
       c.req.valid("json");
@@ -65,6 +67,7 @@ deliveries.delete(
   "/:id",
   guard("delivery.delete", EntityType.Permission),
   zValidator("param", idParamsValidationSchema),
+  audit(AuditAction.DELETE, AuditEntityTypes.DELIVERY),
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteDelivery(id);
@@ -83,6 +86,7 @@ deliveries.put(
   "/",
   guard("delivery.edit", EntityType.Permission),
   zValidator("json", updateDeliveryValidationSchema),
+  audit(AuditAction.UPDATE, AuditEntityTypes.DELIVERY),
   async (c) => {
     const { deliveryId, status, addressId, deliveryPersonId } =
       c.req.valid("json");

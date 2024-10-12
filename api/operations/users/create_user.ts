@@ -28,7 +28,7 @@ async function createUser({
   });
 
   if (existingUser) {
-    throw new ParamsError("User with this email already exists");
+    throw new ParamsError("user with this email already exists");
   }
 
   const hashedPassword = await hash(password);

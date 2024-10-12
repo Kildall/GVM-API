@@ -46,6 +46,7 @@ async function hasEntityRecursive(
       }
     }
 
+    // TODO: Check nested roles
     // Recursive check for nested entities
     const nestedEntities = await prisma.entity.findMany({
       where: { roles: { some: { id: userEntity.entityId } } },
