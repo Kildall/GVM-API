@@ -33,7 +33,7 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
     hashedPassword !== existingUser.password ||
     email !== existingUser.email
   ) {
-    throw new AccessError("incorrect password");
+    throw new AccessError("incorrect password", 1005);
   }
 
   const { jwt: token, session } = await createSession(

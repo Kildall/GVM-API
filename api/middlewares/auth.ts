@@ -28,7 +28,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader) {
     if (!isAuthRoute) {
-      throw new AccessError("auth header missing");
+      throw new AccessError("authentication not provided", 1003);
     }
     return next();
   }
