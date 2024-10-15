@@ -1,10 +1,10 @@
-import type { Session, User } from "@prisma/client";
+import type { ResponseError } from "@/api/types/errors";
 import type { JWTPayload } from "hono/utils/jwt/types";
 
 export interface APIResponse {
   status: {
     success: boolean;
-    errors: unknown[];
+    errors: ResponseError[];
   };
   data: unknown;
 }

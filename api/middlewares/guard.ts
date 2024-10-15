@@ -2,6 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { prisma } from "@/api/helpers/prisma";
 import { EntityType } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
+import { AccessError, ServerError } from "@/api/types/errors";
 
 async function hasEntityRecursive(
   userId: number,
@@ -72,37 +73,25 @@ async function hasEntityRecursive(
 const guard = (entityName: string, entityType: EntityType) => {
   return createMiddleware(async (c, next) => {
     if (!c.get("isAuthenticated")) {
-      throw new HTTPException(401, { message: "User not authenticated" });
+      throw new AccessError("user not authenticated");
     }
 
     const userId = c.get("jwtPayload")?.id;
     if (!userId) {
-      throw new HTTPException(401, {
-        message: "User ID not found in JWT payload",
-      });
+      throw new AccessError("user not found in payload");
     }
 
-    try {
-      const hasEntity = await hasEntityRecursive(
-        userId,
-        entityName,
-        entityType
+    const hasEntity = await hasEntityRecursive(userId, entityName, entityType);
+
+    if (!hasEntity) {
+      throw new AccessError(
+        `user does not have required ${entityType.toLowerCase()}: ${entityName}`,
+        1004
       );
-
-      if (!hasEntity) {
-        throw new HTTPException(403, {
-          message: `User does not have the required ${entityType.toLowerCase()}: ${entityName}`,
-        });
-      }
-
-      // If we reach this point, the user has the required entity
-      await next();
-    } catch (error) {
-      if (error instanceof HTTPException) {
-        throw error;
-      }
-      throw new HTTPException(500, { message: "Error checking user entity" });
     }
+
+    // If we reach this point, the user has the required entity
+    await next();
   });
 };
 

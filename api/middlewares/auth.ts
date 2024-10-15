@@ -4,6 +4,7 @@ import { env } from "@/config/env.ts";
 import { z } from "zod";
 import { prisma } from "@/api/helpers/prisma";
 import { HTTPException } from "hono/http-exception";
+import { AccessError } from "@/api/types/errors";
 
 export const jwtValidationSchema = z.object({
   id: z.number().positive(),
@@ -27,7 +28,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader) {
     if (!isAuthRoute) {
-      throw new HTTPException(401, { message: "authorization header missing" });
+      throw new AccessError("auth header missing");
     }
     return next();
   }
@@ -38,7 +39,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
     const validationResult = jwtValidationSchema.safeParse(payload);
 
     if (!validationResult.success) {
-      throw new Error("invalid token payload");
+      throw new AccessError("invalid token payload");
     }
 
     const { id, sesion } = validationResult.data;
@@ -49,7 +50,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
       where: { id, verified: true, enabled: true },
     });
     if (!user) {
-      throw new Error("user not found");
+      throw new AccessError("user not found");
     }
 
     const session = await prisma.session.findFirst({
@@ -68,7 +69,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
     c.set("isAuthenticated", true);
   } catch (error) {
     if (!isAuthRoute) {
-      throw new HTTPException(401, { message: "unable to authorize" });
+      throw new AccessError();
     }
   }
 

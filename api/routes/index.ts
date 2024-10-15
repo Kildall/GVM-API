@@ -21,6 +21,7 @@ import { suppliers } from "@/api/routes/suppliers";
 import { products } from "@/api/routes/products";
 import { admin } from "@/api/routes/admin";
 import { audits } from "@/api/routes/audits";
+import { APIError, type ResponseError } from "@/api/types/errors";
 
 type Variables = JWTVariables;
 
@@ -37,28 +38,38 @@ api.use("/*", authMiddleware);
 api.onError((error, c) => {
   log.error(error);
   if (error instanceof HTTPException) {
+    const errors: ResponseError[] = [];
+    errors.push({
+      code: 0,
+      message: typeof error.cause === "string" ? error.cause : error.message,
+    });
     const response: APIResponse = {
       status: {
         success: false,
-        errors: [error.cause || error.message].flat(),
+        errors: errors,
       },
       data: null,
     };
 
     return c.json(response);
   }
-  let errorMessage = "An unknown error occurred";
+  let genericError: ResponseError = {
+    code: 0,
+    message: "an unknown error occurred",
+  };
 
   const response: APIResponse = {
     status: {
       success: false,
-      errors: [{ message: errorMessage }],
+      errors: [genericError],
     },
     data: null,
   };
 
-  if (error instanceof Error) {
-    response.status.errors = [error.message];
+  if (error instanceof APIError) {
+    response.status.errors = [
+      { code: error.errorCode ?? 0, message: error.message },
+    ];
   }
 
   return c.json(response);

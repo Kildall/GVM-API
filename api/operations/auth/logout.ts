@@ -1,4 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
+import { AccessError } from "@/api/types/errors";
 import { HTTPException } from "hono/http-exception";
 
 interface LogoutInput {
@@ -18,9 +19,7 @@ async function logout({ userId, sessionId }: LogoutInput) {
   });
 
   if (!user) {
-    throw new HTTPException(401, {
-      cause: { message: "unable to authorize" },
-    });
+    throw new AccessError();
   }
 
   const session = await prisma.session.findFirst({
@@ -32,9 +31,7 @@ async function logout({ userId, sessionId }: LogoutInput) {
   });
 
   if (!session) {
-    throw new HTTPException(401, {
-      cause: { message: "unable to authorize" },
-    });
+    throw new AccessError();
   }
 
   // Update the session

@@ -5,10 +5,10 @@ import { login } from "@/api/operations/auth/login.ts";
 import { zValidator } from "@hono/zod-validator";
 import { getConnInfo } from "hono/bun";
 import type { RequestTelemetrics } from "@/api/types/api";
-import { HTTPException } from "hono/http-exception";
 import { logout } from "@/api/operations/auth/logout";
 import type { JWTVariables } from "@/api/middlewares/auth";
 import { verifyAccountToken } from "@/api/operations/auth/verify";
+import { AccessError } from "@/api/types/errors";
 
 const auth = new Hono<{ Variables: JWTVariables }>();
 
@@ -20,7 +20,7 @@ const signupValidationSchema = z.object({
 
 auth.post("/signup", zValidator("json", signupValidationSchema), async (c) => {
   if (c.get("isAuthenticated")) {
-    throw new HTTPException(400, { message: "you are already logged in" });
+    throw new AccessError("you are already logged in", 1002);
   }
   const { email, name, password } = c.req.valid("json");
   await signup({ email, name, password });
@@ -35,7 +35,7 @@ const loginValidationSchema = z.object({
 
 auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
   if (c.get("isAuthenticated")) {
-    throw new HTTPException(400, { message: "you are already logged in" });
+    throw new AccessError("you are already logged in", 1002);
   }
   const { email, password, remember } = c.req.valid("json");
   const connInfo = getConnInfo(c);
@@ -51,7 +51,7 @@ auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
 auth.post("/logout", async (c) => {
   const jwtPayload = c.get("jwtPayload");
   if (!jwtPayload) {
-    throw new HTTPException(401, { message: "authentication not provided" });
+    throw new AccessError("authentication not provided", 1003);
   }
   const { sesion: sessionId, id: userId } = jwtPayload;
 
@@ -83,5 +83,13 @@ auth.get(
     return c.json(result);
   }
 );
+
+auth.post("/validate-token", async (c) => {
+  if (c.get("isAuthenticated")) {
+    return c.json({ valid: true });
+  }
+
+  return c.json({ valid: false });
+});
 
 export { auth };

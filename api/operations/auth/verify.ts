@@ -35,7 +35,7 @@ async function verifyAccountToken({
     });
 
     if (!signature) {
-      throw new ParamsError("invalid or expired token");
+      throw new ParamsError("invalid or expired signature");
     }
 
     // Check if the signature has expired

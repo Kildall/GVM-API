@@ -1,5 +1,6 @@
 import { AuditService } from "@/api/helpers/audit_service";
 import { isOriginalBody } from "@/api/middlewares/formatter";
+import { AccessError } from "@/api/types/errors";
 import { AuditAction } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -33,14 +34,12 @@ const audit = (
 ) => {
   return createMiddleware(async (c, next) => {
     if (!c.get("isAuthenticated")) {
-      throw new HTTPException(401, { message: "user not authenticated" });
+      throw new AccessError("user is not authenticated");
     }
 
     const userId = c.get("jwtPayload")?.id;
     if (!userId) {
-      throw new HTTPException(401, {
-        message: "user id not found in jwt payload",
-      });
+      throw new AccessError("user not found in payload");
     }
 
     await next();
