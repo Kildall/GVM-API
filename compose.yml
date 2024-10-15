@@ -1,0 +1,15 @@
+services:
+  gvm-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - MAILERSEND_API_KEY=${MAILERSEND_API_KEY}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - PORT=${PORT}
+    env_file:
+      - .env
