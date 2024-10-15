@@ -9,6 +9,7 @@ dotenv.config();
 const envSchema = z.object({
   ENVIRONMENT: z.enum(["development", "production", "test"]),
   DATABASE_URL: z.string().url(),
+  DIRECT_URL: z.string().url(),
   JWT_SECRET: z.string().min(32),
   MAILERSEND_API_KEY: z.string(),
   PORT: castToNumberSchema,
