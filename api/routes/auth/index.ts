@@ -9,6 +9,7 @@ import { logout } from "@/api/operations/auth/logout";
 import type { JWTVariables } from "@/api/middlewares/auth";
 import { verifyAccountToken } from "@/api/operations/auth/verify";
 import { AccessError } from "@/api/types/errors";
+import { getUserById } from "@/api/operations/users/get_user_by_id";
 
 const auth = new Hono<{ Variables: JWTVariables }>();
 
@@ -90,6 +91,27 @@ auth.post("/validate-token", async (c) => {
   }
 
   return c.json({ valid: false });
+});
+
+auth.get("/user", async (c) => {
+  if (!c.get("isAuthenticated")) {
+    throw new AccessError();
+  }
+
+  const jwtPayload = c.get("jwtPayload");
+  if (!jwtPayload) {
+    throw new AccessError("authentication not provided", 1003);
+  }
+  const { id: userId } = jwtPayload;
+
+  const result = await getUserById(
+    {
+      id: userId,
+    },
+    { id: true, email: true, verified: true }
+  );
+
+  return c.json(result);
 });
 
 export { auth };

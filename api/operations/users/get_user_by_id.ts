@@ -7,19 +7,23 @@ interface GetUserByIdInput {
 }
 
 interface GetUserByIdResponse {
-  user: User;
+  user: Partial<User>;
 }
 
-async function getUserById({
-  id,
-}: GetUserByIdInput): Promise<GetUserByIdResponse> {
+async function getUserById(
+  { id }: GetUserByIdInput,
+  selectFields: Record<string, boolean> = {
+    id: true,
+    email: true,
+    verified: true,
+    sessions: true,
+    permissions: true,
+    signatures: true,
+  }
+): Promise<GetUserByIdResponse> {
   const user = await prisma.user.findUnique({
     where: { id },
-    include: {
-      sessions: true,
-      permissions: true,
-      signatures: true,
-    },
+    select: selectFields,
   });
 
   if (!user) {
