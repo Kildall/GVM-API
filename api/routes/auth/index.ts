@@ -10,6 +10,7 @@ import type { JWTVariables } from "@/api/middlewares/auth";
 import { verifyAccountToken } from "@/api/operations/auth/verify";
 import { AccessError } from "@/api/types/errors";
 import { getUserById } from "@/api/operations/users/get_user_by_id";
+import { getUserInfo } from "@/api/operations/users/get_user_info";
 
 const auth = new Hono<{ Variables: JWTVariables }>();
 
@@ -104,12 +105,9 @@ auth.get("/user", async (c) => {
   }
   const { id: userId } = jwtPayload;
 
-  const result = await getUserById(
-    {
-      id: userId,
-    },
-    { id: true, email: true, verified: true }
-  );
+  const result = await getUserInfo({
+    id: userId,
+  });
 
   return c.json(result);
 });

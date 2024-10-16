@@ -1,8 +1,7 @@
-import { HTTPException } from "hono/http-exception";
 import { prisma } from "@/api/helpers/prisma";
 import { EntityType } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
-import { AccessError, ServerError } from "@/api/types/errors";
+import { AccessError } from "@/api/types/errors";
 
 async function hasEntityRecursive(
   userId: number,

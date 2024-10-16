@@ -12,7 +12,7 @@ interface GetUserByIdResponse {
 
 async function getUserById(
   { id }: GetUserByIdInput,
-  selectFields: Record<string, boolean> = {
+  selectFields: Record<string, unknown> = {
     id: true,
     email: true,
     verified: true,
