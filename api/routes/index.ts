@@ -22,6 +22,7 @@ import { products } from "@/api/routes/products";
 import { admin } from "@/api/routes/admin";
 import { audits } from "@/api/routes/audits";
 import { APIError, type ResponseError } from "@/api/types/errors";
+import { dashboard } from "@/api/routes/dashboard";
 
 type Variables = JWTVariables;
 
@@ -80,6 +81,7 @@ api.route("/admin", admin);
 api.route("/audits", audits);
 api.route("/auth", auth);
 api.route("/customers", customers);
+api.route("/dashboard", dashboard);
 api.route("/deliveries", deliveries);
 api.route("/employees", employees);
 api.route("/products", products);

@@ -3,7 +3,6 @@ import { isOriginalBody } from "@/api/middlewares/formatter";
 import { AccessError } from "@/api/types/errors";
 import { AuditAction } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
-import { HTTPException } from "hono/http-exception";
 
 enum AuditEntityTypes {
   USER = "USER",
