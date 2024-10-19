@@ -1,6 +1,7 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import type { Employee } from "@prisma/client";
 
 interface GetAllProductsResponse {
@@ -17,7 +18,7 @@ async function getEmployees(): Promise<GetAllProductsResponse> {
     return { employees };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not retrieve employees");
+    throw new ServerError();
   }
 }
 

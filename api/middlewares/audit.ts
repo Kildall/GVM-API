@@ -1,6 +1,6 @@
 import { AuditService } from "@/api/helpers/audit_service";
 import { isOriginalBody } from "@/api/middlewares/formatter";
-import { AccessError } from "@/api/types/errors";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 import { AuditAction } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
 
@@ -33,12 +33,12 @@ const audit = (
 ) => {
   return createMiddleware(async (c, next) => {
     if (!c.get("isAuthenticated")) {
-      throw new AccessError("user is not authenticated");
+      throw new AuthError(ErrorCode.ACCESS_DENIED);
     }
 
     const userId = c.get("jwtPayload")?.id;
     if (!userId) {
-      throw new AccessError("user not found in payload");
+      throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
     await next();

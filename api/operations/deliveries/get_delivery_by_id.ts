@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 import type { Delivery, Sale, DeliveryPerson, Address } from "@prisma/client";
 
 interface GetDeliveryByIdResponse extends Delivery {
@@ -22,15 +22,15 @@ async function getDeliveryById(
     });
 
     if (!delivery) {
-      throw new ParamsError("delivery not found");
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     return delivery;
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new ParamsError(`could not retrieve delivery with id ${deliveryId}`);
+    throw new ServerError();
   }
 }
 

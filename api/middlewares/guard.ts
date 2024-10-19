@@ -1,7 +1,7 @@
 import { prisma } from "@/api/helpers/prisma";
 import { EntityType } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
-import { AccessError } from "@/api/types/errors";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 
 async function hasEntityRecursive(
   userId: number,
@@ -72,20 +72,20 @@ async function hasEntityRecursive(
 const guard = (entityName: string, entityType: EntityType) => {
   return createMiddleware(async (c, next) => {
     if (!c.get("isAuthenticated")) {
-      throw new AccessError("user not authenticated");
+      throw new AuthError(ErrorCode.ACCESS_DENIED);
     }
 
     const userId = c.get("jwtPayload")?.id;
     if (!userId) {
-      throw new AccessError("user not found in payload");
+      throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
     const hasEntity = await hasEntityRecursive(userId, entityName, entityType);
 
     if (!hasEntity) {
-      throw new AccessError(
-        `user does not have required ${entityType.toLowerCase()}: ${entityName}`,
-        1004
+      throw new AuthError(
+        ErrorCode.ACCESS_DENIED,
+        `user does not have required ${entityType.toLowerCase()}: ${entityName}`
       );
     }
 

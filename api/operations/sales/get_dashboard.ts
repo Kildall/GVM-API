@@ -1,15 +1,16 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import {
-  type Sale,
-  type Customer,
-  type ProductSale,
-  type Product,
-  type Delivery,
   type Address,
-  SaleStatusEnum,
+  type Customer,
+  type Delivery,
   DeliveryStatusEnum,
+  type Product,
+  type ProductSale,
+  type Sale,
+  SaleStatusEnum,
 } from "@prisma/client";
 
 interface DashboardResponse {
@@ -111,7 +112,7 @@ async function getDashboard(): Promise<DashboardResponse> {
     };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("Could not retrieve dashboard data");
+    throw new ServerError();
   }
 }
 

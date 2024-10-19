@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 import type { Address } from "@prisma/client";
 
 interface UpdateAddressInput {
@@ -40,15 +40,15 @@ async function updateAddress({
     });
 
     if (!updatedAddress) {
-      throw new ParamsError("Address not found");
+      throw new ResourceError(ErrorCode.RESOURCE_UPDATE_FAILED);
     }
 
     return updatedAddress;
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new ParamsError("Could not update address");
+    throw new ServerError();
   }
 }
 

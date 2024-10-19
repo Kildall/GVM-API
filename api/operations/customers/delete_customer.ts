@@ -1,5 +1,6 @@
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 
 interface DeleteCustomerResponse {
   message: string;
@@ -20,15 +21,16 @@ async function deleteCustomer(
     });
 
     if (updatedCustomer.count === 0) {
-      throw new ParamsError("customer not found or already deleted");
+      throw new ResourceError(ErrorCode.RESOURCE_UPDATE_FAILED);
     }
 
     return { message: "customer deleted successfully" };
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new Error("failed to delete customer");
+    log.error(error);
+    throw new ServerError();
   }
 }
 

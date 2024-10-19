@@ -1,7 +1,9 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import type { Product } from "@prisma/client";
+import { error } from "console";
 
 interface CreateProductInput {
   name: string;
@@ -26,7 +28,7 @@ async function createProduct(
     return product;
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not create product");
+    throw new ServerError();
   }
 }
 

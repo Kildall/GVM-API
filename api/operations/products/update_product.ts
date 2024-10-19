@@ -1,7 +1,7 @@
 import { prisma } from "@/api/helpers/prisma";
-import { updateInventory } from "@/api/operations/inventory/update_inventory";
-import { ParamsError } from "@/api/types/errors";
-import type { Product, Purchase, PurchaseProduct } from "@prisma/client";
+import { ServerError } from "@/api/types/errors";
+
+import type { Product } from "@prisma/client";
 
 interface UpdatePurchaseInput {
   productId: number;
@@ -31,7 +31,7 @@ async function updateProduct({
     });
     return product;
   } catch (error) {
-    throw new ParamsError("could not update product");
+    throw new ServerError();
   }
 }
 

@@ -1,5 +1,11 @@
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import {
+  ErrorCode,
+  InvalidParamsError,
+  ResourceError,
+  ServerError,
+} from "@/api/types/errors";
 
 interface DeleteAddressInput {
   addressId: number;
@@ -27,15 +33,16 @@ async function deleteAddress({
     });
 
     if (updatedAddress.count === 0) {
-      throw new ParamsError("address not found or already deleted");
+      throw new ResourceError(ErrorCode.RESOURCE_UPDATE_FAILED);
     }
 
     return { message: "address deleted successfully" };
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof InvalidParamsError) {
       throw error;
     }
-    throw new Error("failed to delete address");
+    log.error(error);
+    throw new ServerError();
   }
 }
 

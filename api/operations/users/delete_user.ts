@@ -1,5 +1,4 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
 
 interface DeleteUserInput {
   id: number;

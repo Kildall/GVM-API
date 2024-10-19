@@ -1,6 +1,6 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { Address } from "@prisma/client";
 
 interface CreateAddressInput {
@@ -29,7 +29,7 @@ async function createAddress(
     return address;
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not create address");
+    throw new ServerError();
   }
 }
 

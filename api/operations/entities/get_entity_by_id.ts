@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 import type { Entity, User } from "@prisma/client";
 
 interface GetEntityByIdInput {
@@ -29,7 +29,7 @@ async function getEntityById({
   });
 
   if (!entity) {
-    throw new ParamsError("Entity not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   const formattedEntity = {

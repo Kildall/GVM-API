@@ -4,6 +4,7 @@ import { Recipient } from "mailersend";
 import { env } from "@/config/env";
 import { sign } from "hono/jwt";
 import { log } from "@/api/helpers/pino";
+import { ServerError } from "@/api/types/errors";
 
 const SUBJECT = "Verify your GVM Account";
 const EMAIL_VERIFICATION_TEMPLATE_ID = "jpzkmgq6jxn4059v";
@@ -24,7 +25,7 @@ async function sendVerificationEmail(user: User, signature: Signature) {
     });
   } catch (error) {
     log.error(error);
-    throw new Error("could not send verification email");
+    throw new ServerError();
   }
 }
 

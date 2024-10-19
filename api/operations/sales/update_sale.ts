@@ -1,7 +1,8 @@
 import { prisma } from "@/api/helpers/prisma";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
-import { ParamsError } from "@/api/types/errors";
-import type { Sale, ProductSale, SaleStatusEnum } from "@prisma/client";
+import { ErrorCode, ServerError, ValidationError } from "@/api/types/errors";
+
+import type { ProductSale, Sale, SaleStatusEnum } from "@prisma/client";
 
 interface UpdateSaleInput {
   saleId: number;
@@ -42,9 +43,7 @@ async function updateSale({
             ? product.quantity - currentProductSale.quantity
             : product.quantity;
           if (!inventoryCheck || inventoryCheck.quantity < additionalQuantity) {
-            throw new ParamsError(
-              `Not enough inventory for product ${product.productId}`
-            );
+            throw new ValidationError(ErrorCode.INSUFFICIENT_INVENTORY);
           }
         }
       }
@@ -94,10 +93,10 @@ async function updateSale({
       return updatedSale;
     });
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ValidationError) {
       throw error;
     }
-    throw new ParamsError("could not update sale");
+    throw new ServerError();
   }
 }
 

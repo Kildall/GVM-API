@@ -1,6 +1,6 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { Delivery, Sale, DeliveryPerson, Address } from "@prisma/client";
 
 interface GetAllDeliveriesResponse {
@@ -40,7 +40,7 @@ async function getDeliveries(
     return { deliveries };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not retrieve deliveries");
+    throw new ServerError();
   }
 }
 

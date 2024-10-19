@@ -1,7 +1,6 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
-import { ParamsError } from "@/api/types/errors";
 
 interface DeleteSaleResponse {
   message: string;

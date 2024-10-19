@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 import type { Customer } from "@prisma/client";
 
 interface UpdateCustomerInput {
@@ -25,15 +25,15 @@ async function updateCustomer({
     });
 
     if (!updatedCustomer) {
-      throw new ParamsError("Customer not found");
+      throw new ResourceError(ErrorCode.RESOURCE_ERROR);
     }
 
     return updatedCustomer;
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new ParamsError("Could not update customer");
+    throw new ServerError();
   }
 }
 

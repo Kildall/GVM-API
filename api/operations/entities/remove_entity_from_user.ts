@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ResourceError } from "@/api/types/errors";
 
 interface RemoveEntityFromUserInput {
   userId: number;
@@ -24,7 +24,7 @@ async function removeEntityFromUser({
   });
 
   if (!entityUser) {
-    throw new ParamsError("entity is not associated with this user");
+    throw new ResourceError();
   }
 
   await prisma.entityUser.delete({

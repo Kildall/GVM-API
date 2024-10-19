@@ -1,11 +1,12 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
+
 import type {
+  Employee,
+  Product,
   Purchase,
   PurchaseProduct,
-  Employee,
   Supplier,
-  Product,
 } from "@prisma/client";
 
 interface GetPurchaseByIdResponse extends Purchase {
@@ -34,15 +35,15 @@ async function getPurchaseById(
     });
 
     if (!purchase) {
-      throw new ParamsError("purchase not found");
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     return purchase;
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new ParamsError(`could not retrieve purchase with id ${purchaseId}`);
+    throw new ServerError();
   }
 }
 

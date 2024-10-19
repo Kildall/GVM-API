@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import {
   BusinessStatusEnum,
   DeliveryStatusEnum,
@@ -42,7 +42,7 @@ async function createDelivery({
 
     return delivery;
   } catch (error) {
-    throw new ParamsError("could not create delivery");
+    throw new ServerError();
   }
 }
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 
 interface DeleteDeliveryResponse {
   message: string;
@@ -16,16 +16,16 @@ async function deleteDelivery(
       });
 
       if (!deletedDelivery) {
-        throw new ParamsError("delivery not found");
+        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
       }
     });
 
     return { message: "delivery deleted successfully" };
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new Error("failed to delete delivery");
+    throw new ServerError();
   }
 }
 

@@ -1,7 +1,7 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import type { AuditEntityTypes } from "@/api/middlewares/audit";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { BaseGetAllRouteInput } from "@/api/types/routes";
 import type { Audit, User, AuditAction } from "@prisma/client";
 
@@ -47,7 +47,7 @@ async function getAudits(
     return { audits };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not retrieve audits");
+    throw new ServerError();
   }
 }
 

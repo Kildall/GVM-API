@@ -1,6 +1,7 @@
 import { hash } from "@/api/helpers/hash";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ResourceError, ErrorCode } from "@/api/types/errors";
+
 import type { User } from "@prisma/client";
 
 interface UpdateUserInput {
@@ -29,7 +30,7 @@ async function updateUser({
   });
 
   if (!existingUser) {
-    throw new ParamsError("user not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   if (email && email !== existingUser.email) {
@@ -37,7 +38,7 @@ async function updateUser({
       where: { email },
     });
     if (emailExists) {
-      throw new ParamsError("a user with this email already exists");
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
   }
 

@@ -1,6 +1,7 @@
 import { hash } from "@/api/helpers/hash";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
+
 import type { User } from "@prisma/client";
 
 interface CreateUserInput {
@@ -28,7 +29,7 @@ async function createUser({
   });
 
   if (existingUser) {
-    throw new ParamsError("user with this email already exists");
+    throw new ResourceError(ErrorCode.RESOURCE_ALREADY_EXISTS);
   }
 
   const hashedPassword = await hash(password);

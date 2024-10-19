@@ -1,5 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
+
 import type { Supplier } from "@prisma/client";
 
 interface GetSupplierByIdResponse extends Supplier {}
@@ -12,7 +13,7 @@ async function getSupplierById(
   });
 
   if (!supplier) {
-    throw new ParamsError("supplier not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   return supplier;

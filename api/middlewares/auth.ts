@@ -3,8 +3,7 @@ import { jwt as honoJwt, verify } from "hono/jwt";
 import { env } from "@/config/env.ts";
 import { z } from "zod";
 import { prisma } from "@/api/helpers/prisma";
-import { HTTPException } from "hono/http-exception";
-import { AccessError } from "@/api/types/errors";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 
 export const jwtValidationSchema = z.object({
   id: z.number().positive(),
@@ -28,7 +27,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader) {
     if (!isAuthRoute) {
-      throw new AccessError("authentication not provided", 1003);
+      throw new AuthError(ErrorCode.MISSING_AUTH);
     }
     return next();
   }
@@ -39,7 +38,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
     const validationResult = jwtValidationSchema.safeParse(payload);
 
     if (!validationResult.success) {
-      throw new AccessError("invalid token payload");
+      throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
     const { id, sesion } = validationResult.data;
@@ -50,7 +49,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
       where: { id, verified: true, enabled: true },
     });
     if (!user) {
-      throw new AccessError("user not found");
+      throw new AuthError(ErrorCode.TOKEN_EXPIRED);
     }
 
     const session = await prisma.session.findFirst({
@@ -64,12 +63,12 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
     });
 
     if (!session) {
-      throw new Error("active session not found");
+      throw new AuthError(ErrorCode.TOKEN_EXPIRED);
     }
     c.set("isAuthenticated", true);
   } catch (error) {
     if (!isAuthRoute) {
-      throw new AccessError();
+      throw new AuthError(ErrorCode.ACCESS_DENIED);
     }
   }
 

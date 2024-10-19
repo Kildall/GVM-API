@@ -1,6 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
 import { getUserEntities } from "@/api/operations/entities/get_user_entities";
-import { ParamsError } from "@/api/types/errors";
+
 import { type User } from "@prisma/client";
 
 interface GetUserInfoInput {

@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { Delivery, DeliveryStatusEnum } from "@prisma/client";
 
 interface UpdateDeliveryInput {
@@ -46,7 +46,7 @@ async function updateDelivery({
 
     return updatedDelivery;
   } catch (error) {
-    throw new ParamsError("could not update delivery");
+    throw new ServerError();
   }
 }
 

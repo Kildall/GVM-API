@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 
 interface DeleteSupplierResponse {
   message: string;
@@ -20,15 +20,15 @@ async function deleteSupplier(
     });
 
     if (updatedSupplier.count === 0) {
-      throw new ParamsError("supplier not found or already deleted");
+      throw new ResourceError(ErrorCode.RESOURCE_UPDATE_FAILED);
     }
 
     return { message: "supplier deleted successfully" };
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new Error("failed to delete supplier");
+    throw new ServerError();
   }
 }
 

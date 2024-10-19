@@ -1,5 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import type { Supplier } from "@prisma/client";
 
 interface UpdateSupplierInput {
@@ -20,7 +21,7 @@ async function updateSupplier({
     });
     return supplier;
   } catch (error) {
-    throw new ParamsError("could not update supplier");
+    throw new ServerError();
   }
 }
 

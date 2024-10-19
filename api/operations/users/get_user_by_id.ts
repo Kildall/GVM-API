@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+
 import type { User } from "@prisma/client";
 
 interface GetUserByIdInput {

@@ -1,6 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
-import type { User, Entity } from "@prisma/client";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
+import type { User } from "@prisma/client";
 
 interface GetEntityUsersInput {
   entityId: number;
@@ -19,7 +19,7 @@ async function getEntityUsers({
     },
   });
   if (!entity) {
-    throw new ParamsError("entity not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   const entityUsers = await prisma.entityUser.findMany({

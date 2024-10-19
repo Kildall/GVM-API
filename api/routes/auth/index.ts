@@ -1,16 +1,15 @@
-import { Hono } from "hono";
-import { z } from "zod";
-import { signup } from "@/api/operations/auth/signup.ts";
-import { login } from "@/api/operations/auth/login.ts";
-import { zValidator } from "@hono/zod-validator";
-import { getConnInfo } from "hono/bun";
-import type { RequestTelemetrics } from "@/api/types/api";
-import { logout } from "@/api/operations/auth/logout";
 import type { JWTVariables } from "@/api/middlewares/auth";
+import { login } from "@/api/operations/auth/login.ts";
+import { logout } from "@/api/operations/auth/logout";
+import { signup } from "@/api/operations/auth/signup.ts";
 import { verifyAccountToken } from "@/api/operations/auth/verify";
-import { AccessError } from "@/api/types/errors";
-import { getUserById } from "@/api/operations/users/get_user_by_id";
 import { getUserInfo } from "@/api/operations/users/get_user_info";
+import type { RequestTelemetrics } from "@/api/types/api";
+import { AuthError, ErrorCode } from "@/api/types/errors";
+import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
+import { getConnInfo } from "hono/bun";
+import { z } from "zod";
 
 const auth = new Hono<{ Variables: JWTVariables }>();
 
@@ -22,7 +21,7 @@ const signupValidationSchema = z.object({
 
 auth.post("/signup", zValidator("json", signupValidationSchema), async (c) => {
   if (c.get("isAuthenticated")) {
-    throw new AccessError("you are already logged in", 1002);
+    throw new AuthError(ErrorCode.AUTHENTICATED);
   }
   const { email, name, password } = c.req.valid("json");
   await signup({ email, name, password });
@@ -37,7 +36,7 @@ const loginValidationSchema = z.object({
 
 auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
   if (c.get("isAuthenticated")) {
-    throw new AccessError("you are already logged in", 1002);
+    throw new AuthError(ErrorCode.AUTHENTICATED);
   }
   const { email, password, remember } = c.req.valid("json");
   const connInfo = getConnInfo(c);
@@ -53,7 +52,7 @@ auth.post("/login", zValidator("json", loginValidationSchema), async (c) => {
 auth.post("/logout", async (c) => {
   const jwtPayload = c.get("jwtPayload");
   if (!jwtPayload) {
-    throw new AccessError("authentication not provided", 1003);
+    throw new AuthError(ErrorCode.MISSING_AUTH);
   }
   const { sesion: sessionId, id: userId } = jwtPayload;
 
@@ -96,12 +95,12 @@ auth.post("/validate-token", async (c) => {
 
 auth.get("/user", async (c) => {
   if (!c.get("isAuthenticated")) {
-    throw new AccessError();
+    throw new AuthError(ErrorCode.ACCESS_DENIED);
   }
 
   const jwtPayload = c.get("jwtPayload");
   if (!jwtPayload) {
-    throw new AccessError("authentication not provided", 1003);
+    throw new AuthError(ErrorCode.MISSING_AUTH);
   }
   const { id: userId } = jwtPayload;
 

@@ -1,6 +1,7 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
-import type { Sale, ProductSale, Customer, Product } from "@prisma/client";
+import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
+
+import type { Customer, Product, ProductSale, Sale } from "@prisma/client";
 
 interface GetSaleByIdResponse extends Sale {
   customer: Customer;
@@ -24,15 +25,15 @@ async function getSaleById(saleId: number): Promise<GetSaleByIdResponse> {
     });
 
     if (!sale) {
-      throw new ParamsError("sale not found");
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     return sale;
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
-    throw new ParamsError(`could not retrieve sale with id ${saleId}`);
+    throw new ServerError();
   }
 }
 

@@ -1,4 +1,4 @@
-import { AccessError } from "@/api/types/errors.ts";
+import { AuthError, ErrorCode } from "@/api/types/errors.ts";
 import { prisma } from "@/api/helpers/prisma.ts";
 import { createSession } from "@/api/operations/auth/create_session";
 import type { RequestTelemetrics } from "@/api/types/api";
@@ -24,7 +24,7 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
   });
 
   if (!existingUser) {
-    throw new AccessError("user doesnt exist");
+    throw new AuthError(ErrorCode.USER_NOT_FOUND);
   }
 
   const hashedPassword = await hash(password);
@@ -33,7 +33,7 @@ async function login({ email, password, remember, telemetrics }: LoginInput) {
     hashedPassword !== existingUser.password ||
     email !== existingUser.email
   ) {
-    throw new AccessError("incorrect password", 1005);
+    throw new AuthError(ErrorCode.INCORRECT_PASSWORD);
   }
 
   const { jwt: token, session } = await createSession(

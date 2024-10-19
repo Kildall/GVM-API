@@ -1,12 +1,13 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import type {
-  Purchase,
   Employee,
-  Supplier,
-  PurchaseProduct,
   Product,
+  Purchase,
+  PurchaseProduct,
+  Supplier,
 } from "@prisma/client";
 
 interface GetAllPurchasesResponse {
@@ -51,7 +52,7 @@ async function getPurchases(
     return { purchases };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not retrieve purchases");
+    throw new ServerError();
   }
 }
 

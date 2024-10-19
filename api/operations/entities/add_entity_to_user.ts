@@ -1,4 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
+import { ResourceError, ErrorCode } from "@/api/types/errors";
 
 interface AddEntityInput {
   userId: number;
@@ -20,7 +21,7 @@ async function addEntityToUser({
   });
 
   if (!entity) {
-    throw new Error("entity not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   const user = await prisma.user.findUnique({
@@ -30,7 +31,7 @@ async function addEntityToUser({
   });
 
   if (!user) {
-    throw new Error("user not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
   await prisma.entityUser.create({
     data: {

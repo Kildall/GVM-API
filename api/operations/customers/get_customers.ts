@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 import type { Customer } from "@prisma/client";
 
 interface GetCustomersResponse {
@@ -14,7 +14,7 @@ async function getCustomers(): Promise<GetCustomersResponse> {
   });
 
   if (!customers) {
-    throw new ParamsError("customer not found");
+    throw new ResourceError(ErrorCode.RESOURCE_ERROR);
   }
 
   const response: GetCustomersResponse = {

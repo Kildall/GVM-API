@@ -1,6 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { AccessError } from "@/api/types/errors";
-import { HTTPException } from "hono/http-exception";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 
 interface LogoutInput {
   userId: number;
@@ -19,7 +18,7 @@ async function logout({ userId, sessionId }: LogoutInput) {
   });
 
   if (!user) {
-    throw new AccessError();
+    throw new AuthError(ErrorCode.INVALID_TOKEN);
   }
 
   const session = await prisma.session.findFirst({
@@ -31,7 +30,7 @@ async function logout({ userId, sessionId }: LogoutInput) {
   });
 
   if (!session) {
-    throw new AccessError();
+    throw new AuthError(ErrorCode.INVALID_TOKEN);
   }
 
   // Update the session

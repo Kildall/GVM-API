@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 interface RemoveEntityInput {
   id: number;
@@ -18,7 +18,7 @@ async function deleteEntity({
   });
 
   if (!existingEntity) {
-    throw new ParamsError("entity not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   // Remove all associations

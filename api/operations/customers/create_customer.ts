@@ -1,6 +1,6 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { Customer } from "@prisma/client";
 
 interface CreateCustomerInput {
@@ -26,7 +26,7 @@ async function createCustomer({
     return customer;
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not create customer");
+    throw new ServerError();
   }
 }
 

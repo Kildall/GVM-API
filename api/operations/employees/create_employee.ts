@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 import type { Supplier } from "@prisma/client";
 
 interface CreateEmployeeInput {
@@ -23,7 +23,7 @@ async function createEmployee({
 
     return employee;
   } catch (error) {
-    throw new ParamsError("could not create supplier");
+    throw new ServerError();
   }
 }
 

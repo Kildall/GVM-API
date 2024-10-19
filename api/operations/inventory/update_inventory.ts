@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
 
 interface UpdateInventoryInput {
   productId: number;
@@ -22,9 +22,7 @@ async function updateInventory({
       },
     });
   } catch (error) {
-    throw new ParamsError(
-      `failed to update inventory for product ${productId}`
-    );
+    throw new ServerError();
   }
 }
 

@@ -1,6 +1,7 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
-import type { Entity, EntityType, User } from "@prisma/client";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
+
+import type { Entity, EntityType } from "@prisma/client";
 
 interface CreateEntityInput {
   name: string;
@@ -22,7 +23,7 @@ async function createEntity({
   });
 
   if (existingEntity) {
-    throw new ParamsError("entity already exists");
+    throw new ResourceError(ErrorCode.RESOURCE_ALREADY_EXISTS);
   }
 
   const entity = await prisma.entity.create({

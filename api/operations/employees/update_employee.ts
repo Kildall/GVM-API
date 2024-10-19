@@ -1,5 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ServerError } from "@/api/types/errors";
+
 import type { Employee } from "@prisma/client";
 
 interface UpdateEmployeeInput {
@@ -22,7 +23,7 @@ async function updateEmployee({
     });
     return employee;
   } catch (error) {
-    throw new ParamsError("could not update employee");
+    throw new ServerError();
   }
 }
 

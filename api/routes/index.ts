@@ -1,28 +1,27 @@
-import { Hono } from "hono";
-import type { JwtVariables } from "hono/jwt";
-import { cors } from "hono/cors";
-import { auth } from "@/api/routes/auth/index.ts";
-import { logger } from "@/api/middlewares/logger.ts";
-import { responseFormatter } from "@/api/middlewares/formatter.ts";
-import { HTTPException } from "hono/http-exception";
-import type { APIResponse } from "@/api/types/api.ts";
 import { log } from "@/api/helpers/pino";
 import {
   auth as authMiddleware,
   type JWTVariables,
 } from "@/api/middlewares/auth";
-import { customers } from "@/api/routes/customers";
+import { responseFormatter } from "@/api/middlewares/formatter.ts";
+import { logger } from "@/api/middlewares/logger.ts";
 import { addresses } from "@/api/routes/address";
+import { admin } from "@/api/routes/admin";
+import { audits } from "@/api/routes/audits";
+import { auth } from "@/api/routes/auth/index.ts";
+import { customers } from "@/api/routes/customers";
+import { dashboard } from "@/api/routes/dashboard";
 import { deliveries } from "@/api/routes/deliveries";
 import { employees } from "@/api/routes/employees";
+import { products } from "@/api/routes/products";
 import { purchases } from "@/api/routes/purchases";
 import { sales } from "@/api/routes/sales";
 import { suppliers } from "@/api/routes/suppliers";
-import { products } from "@/api/routes/products";
-import { admin } from "@/api/routes/admin";
-import { audits } from "@/api/routes/audits";
+import type { APIResponse } from "@/api/types/api.ts";
 import { APIError, type ResponseError } from "@/api/types/errors";
-import { dashboard } from "@/api/routes/dashboard";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 
 type Variables = JWTVariables;
 
@@ -69,7 +68,7 @@ api.onError((error, c) => {
 
   if (error instanceof APIError) {
     response.status.errors = [
-      { code: error.errorCode ?? 0, message: error.message },
+      { code: error.code ?? 0, message: error.message },
     ];
   }
 

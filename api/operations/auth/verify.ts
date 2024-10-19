@@ -1,8 +1,14 @@
 import { verify } from "hono/jwt";
 import { prisma } from "@/api/helpers/prisma";
 import { env } from "@/config/env";
-import { ParamsError } from "@/api/types/errors";
+import {
+  AuthError,
+  ErrorCode,
+  ResourceError,
+  ServerError,
+} from "@/api/types/errors";
 import type { JWTPayload } from "hono/utils/jwt/types";
+import { log } from "@/api/helpers/pino";
 
 interface VerifyTokenPayload extends JWTPayload {
   id: string;
@@ -35,22 +41,22 @@ async function verifyAccountToken({
     });
 
     if (!signature) {
-      throw new ParamsError("invalid or expired signature");
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     // Check if the signature has expired
     if (new Date() > signature.expiresAt) {
-      throw new ParamsError("token has expired");
+      throw new AuthError(ErrorCode.TOKEN_EXPIRED);
     }
 
     // Check if the user ID in the token matches the user ID in the signature
     if (signature.userId !== payload.user) {
-      throw new ParamsError("invalid token");
+      throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
     // Check if the user exists and is not already verified
     if (!signature.User || signature.User.verified) {
-      throw new ParamsError("user not found or already verified");
+      throw new AuthError(ErrorCode.USER_ERROR);
     }
 
     await prisma.$transaction(async (prisma) => {
@@ -73,13 +79,11 @@ async function verifyAccountToken({
 
     return { message: "account verified successfully" };
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof AuthError || error instanceof ResourceError) {
       throw error;
     }
-    if (error instanceof Error && error.message === "invalid signature") {
-      throw new ParamsError("invalid token");
-    }
-    throw new Error("account verification failed");
+    log.error(error);
+    throw new ServerError();
   }
 }
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 import { EntityType, type Entity } from "@prisma/client";
 
 interface ModifyEntityInput {
@@ -23,7 +23,7 @@ async function updateEntity({
   });
 
   if (!existingEntity) {
-    throw new ParamsError("entity not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   if (name && name !== existingEntity.name) {
@@ -31,7 +31,7 @@ async function updateEntity({
       where: { name },
     });
     if (nameExists) {
-      throw new ParamsError("an entity with this name already exists");
+      throw new ResourceError();
     }
   }
 

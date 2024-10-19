@@ -1,7 +1,8 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ParamsError } from "@/api/types/errors";
-import type { Sale, Customer, ProductSale, Product } from "@prisma/client";
+import { ServerError } from "@/api/types/errors";
+
+import type { Customer, Product, ProductSale, Sale } from "@prisma/client";
 
 interface GetAllSalesResponse {
   sales: (Sale & {
@@ -43,7 +44,7 @@ async function getSales(
     return { sales };
   } catch (error) {
     log.error(error);
-    throw new ParamsError("could not retrieve sales");
+    throw new ServerError();
   }
 }
 
