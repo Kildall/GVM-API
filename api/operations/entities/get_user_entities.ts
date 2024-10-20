@@ -42,13 +42,15 @@ async function getUserEntities(userId: number): Promise<Entity[]> {
     }
   }
 
-  const userEntities = await prisma.entityUser.findMany({
-    where: { userId },
-    include: { entity: true },
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { permissions: true },
   });
 
-  for (const userEntity of userEntities) {
-    await traverseEntity(userEntity.entityId);
+  if (!user) return [];
+
+  for (const userEntity of user.permissions) {
+    await traverseEntity(userEntity.id);
   }
 
   return entities;

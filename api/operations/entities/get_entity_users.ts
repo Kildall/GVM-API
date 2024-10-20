@@ -17,22 +17,15 @@ async function getEntityUsers({
     where: {
       id: entityId,
     },
+    include: { users: true },
+
   });
   if (!entity) {
     throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
-  const entityUsers = await prisma.entityUser.findMany({
-    where: {
-      entityId: entity.id,
-    },
-    include: {
-      user: true,
-    },
-  });
-
-  const formattedUsers = entityUsers.map((entityUser) => {
-    return entityUser.user;
+  const formattedUsers = entity.users.map((entityUser) => {
+    return entityUser;
   });
 
   return { users: formattedUsers };

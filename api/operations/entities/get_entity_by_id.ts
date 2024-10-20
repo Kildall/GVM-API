@@ -19,11 +19,7 @@ async function getEntityById({
   const entity = await prisma.entity.findUnique({
     where: { id },
     include: {
-      entityUser: {
-        include: {
-          user: true,
-        },
-      },
+      users: true,
       roles: true,
     },
   });
@@ -34,7 +30,7 @@ async function getEntityById({
 
   const formattedEntity = {
     ...entity,
-    users: entity.entityUser.map((eu) => eu.user),
+    users: entity.users,
     childEntities: entity.roles,
   };
 

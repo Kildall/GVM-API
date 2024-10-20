@@ -14,7 +14,6 @@ async function deleteEntity({
 }: RemoveEntityInput): Promise<RemoveEntityResponse> {
   const existingEntity = await prisma.entity.findUnique({
     where: { id },
-    include: { entityUser: true, roles: true },
   });
 
   if (!existingEntity) {

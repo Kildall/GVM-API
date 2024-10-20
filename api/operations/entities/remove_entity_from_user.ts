@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ResourceError } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 interface RemoveEntityFromUserInput {
   userId: number;
@@ -14,27 +14,18 @@ async function removeEntityFromUser({
   userId,
   entityId,
 }: RemoveEntityFromUserInput): Promise<RemoveEntityFromUserResponse> {
-  const entityUser = await prisma.entityUser.findUnique({
-    where: {
-      userId_entityId: {
-        userId,
-        entityId,
+  const updateResult = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      permissions: {
+        delete: { id: entityId },
       },
     },
   });
 
-  if (!entityUser) {
-    throw new ResourceError();
+  if (!updateResult) {
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
-
-  await prisma.entityUser.delete({
-    where: {
-      userId_entityId: {
-        userId,
-        entityId,
-      },
-    },
-  });
 
   return { message: "entity successfully removed from user" };
 }

@@ -307,10 +307,12 @@ async function main() {
   });
 
   // Assign admin role to user2
-  await prisma.entityUser.create({
+  await prisma.user.update({
+    where: { id: user2.id },
     data: {
-      userId: user2.id,
-      entityId: adminRole.id,
+      permissions: {
+        connect: { id: adminRole.id },
+      },
     },
   });
 

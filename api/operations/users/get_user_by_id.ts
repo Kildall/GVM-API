@@ -1,4 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 import type { User } from "@prisma/client";
 
@@ -27,7 +28,7 @@ async function getUserById(
   });
 
   if (!user) {
-    throw new ParamsError("user not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   return { user };

@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ResourceError, ErrorCode } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 interface AddEntityInput {
   userId: number;
@@ -33,16 +33,13 @@ async function addEntityToUser({
   if (!user) {
     throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
-  await prisma.entityUser.create({
+
+  await prisma.user.update({
+    where: { id: userId },
     data: {
-      entity: {
+      permissions: {
         connect: {
-          id: entity.id,
-        },
-      },
-      user: {
-        connect: {
-          id: user.id,
+          id: entityId,
         },
       },
     },

@@ -1,5 +1,6 @@
 import { prisma } from "@/api/helpers/prisma";
 import { getUserEntities } from "@/api/operations/entities/get_user_entities";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 import { type User } from "@prisma/client";
 
@@ -22,18 +23,14 @@ async function getUserInfo({
       name: true,
       permissions: {
         select: {
-          entity: {
-            select: {
-              name: true,
-            },
-          },
+          name: true
         },
       },
     },
   });
 
   if (!dbUser) {
-    throw new ParamsError("user not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   const user: GetUserInfoResponse["user"] = {

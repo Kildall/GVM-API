@@ -1,7 +1,7 @@
 import { prisma } from "@/api/helpers/prisma";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 import { EntityType } from "@prisma/client";
 import { createMiddleware } from "hono/factory";
-import { AuthError, ErrorCode } from "@/api/types/errors";
 
 async function hasEntityRecursive(
   userId: number,
@@ -9,29 +9,29 @@ async function hasEntityRecursive(
   entityType: EntityType,
   visitedEntities: Set<number> = new Set()
 ): Promise<boolean> {
-  const userEntities = await prisma.entityUser.findMany({
-    where: { userId: userId },
-    include: { entity: true },
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { permissions: true },
   });
 
-  for (const userEntity of userEntities) {
-    if (visitedEntities.has(userEntity.entityId)) {
+  if (!user) return false;
+
+
+  for (const userEntity of user.permissions) {
+    if (visitedEntities.has(userEntity.id)) {
       continue; // Skip if we've already visited this entity to prevent infinite loops
     }
-    visitedEntities.add(userEntity.entityId);
+    visitedEntities.add(userEntity.id);
 
-    if (
-      userEntity.entity.name === targetEntityName &&
-      userEntity.entity.type === entityType
-    ) {
+    if (userEntity.name === targetEntityName && userEntity.type === entityType) {
       return true; // Found the target entity
     }
 
     // If this is a role, check its permissions
-    if (userEntity.entity.type === EntityType.Role) {
+    if (userEntity.type === EntityType.Role) {
       const rolePermissions = await prisma.entity.findMany({
         where: {
-          roles: { some: { id: userEntity.entityId } },
+          roles: { some: { id: userEntity.id } },
           type: EntityType.Permission,
         },
       });

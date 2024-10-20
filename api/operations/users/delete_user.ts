@@ -1,4 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 interface DeleteUserInput {
   id: number;
@@ -16,17 +17,12 @@ async function deleteUser({
   });
 
   if (!existingUser) {
-    throw new ParamsError("user not found");
+    throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
   await prisma.$transaction(async (prisma) => {
     // Delete related sessions
     await prisma.session.deleteMany({
-      where: { userId: id },
-    });
-
-    // Delete related permissions (EntityUser)
-    await prisma.entityUser.deleteMany({
       where: { userId: id },
     });
 
