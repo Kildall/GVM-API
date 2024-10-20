@@ -195,37 +195,28 @@ enum EntityType {
 }
 
 model Entity {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
   type        EntityType
-  entityUser  EntityUser[]
-  permissions Entity[]     @relation("PermissionRole")
-  roles       Entity[]     @relation("PermissionRole")
+  users       User[]     @relation("EntityUser")
+  permissions Entity[]   @relation("PermissionRole")
+  roles       Entity[]   @relation("PermissionRole")
 
   @@map("Entity")
 }
 
-model EntityUser {
-  userId   Int
-  entityId Int
-  user     User   @relation(fields: [userId], references: [id])
-  entity   Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
-
-  @@id([userId, entityId])
-  @@map("EntityUser")
-}
-
 model User {
-  id          Int          @id @default(autoincrement()) @map("UserId")
-  name        String       @db.VarChar(256)
-  email       String       @unique @db.VarChar(100)
-  password    String       @db.VarChar(256)
-  enabled     Boolean      @default(true)
-  verified    Boolean      @default(false)
+  id          Int         @id @default(autoincrement()) @map("UserId")
+  name        String      @db.VarChar(256)
+  email       String      @unique @db.VarChar(100)
+  password    String      @db.VarChar(256)
+  enabled     Boolean     @default(true)
+  verified    Boolean     @default(false)
   sessions    Session[]
-  permissions EntityUser[]
+  permissions Entity[]    @relation("EntityUser")
   signatures  Signature[]
   audits      Audit[]
+  entityId    Int?
 
   @@map("User")
 }
