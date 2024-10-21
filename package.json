@@ -3,10 +3,11 @@
   "module": "server.ts",
   "type": "module",
   "scripts": {
-    "prisma:generate": "bunx prisma generate",
+    "prisma:generate": "bunx prisma generate --generator client",
+    "prisma:dart": "bunx prisma generate --generator dart",
     "prisma:migrate": "bunx prisma migrate",
     "dev": "bun run --hot server.ts",
-    "server": "bun run prisma:generate --generator client && bun server.ts"
+    "server": "bun run prisma:generate && bun server.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
