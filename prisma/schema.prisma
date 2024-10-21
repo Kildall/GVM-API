@@ -3,6 +3,11 @@ generator client {
   binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
+generator dart {
+  provider = "node ./node_modules/@abcx3/prisma-generator-dart/index.js"
+  output   = "./dart"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -227,7 +232,7 @@ model Session {
   active    Boolean
   createdAt DateTime
   expiresAt DateTime
-  User      User?    @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
   userId    Int?
 
   @@map("Session")
@@ -244,7 +249,7 @@ model Signature {
   ip        String?
   createdAt DateTime
   expiresAt DateTime
-  User      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
   userId    Int
 }
 
