@@ -9,6 +9,12 @@ async function getEmployeeById(
 ): Promise<GetEmployeeByIdResponse> {
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId, enabled: true },
+    include: {
+      deliveries: true,
+      sales: true,
+      purchases: true,
+      employeeDelivery: true,
+    },
   });
 
   if (!employee) {

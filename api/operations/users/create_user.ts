@@ -17,7 +17,6 @@ interface CreateUserResponse {
 }
 
 async function createUser({
-  name,
   email,
   password,
   verified = false,
@@ -36,7 +35,6 @@ async function createUser({
 
   const user = await prisma.user.create({
     data: {
-      name,
       email,
       password: hashedPassword,
       verified,

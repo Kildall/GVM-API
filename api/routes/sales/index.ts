@@ -1,16 +1,16 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
-import { getSaleById } from "@/api/operations/sales/get_sale_by_id";
-import { getSales } from "@/api/operations/sales/get_sales";
+import { guard } from "@/api/middlewares/guard";
 import { createSale } from "@/api/operations/sales/create_sale";
 import { deleteSale } from "@/api/operations/sales/delete_sale";
+import { getSaleById } from "@/api/operations/sales/get_sale_by_id";
+import { getSales } from "@/api/operations/sales/get_sales";
 import { updateSale } from "@/api/operations/sales/update_sale";
+import { zValidator } from "@hono/zod-validator";
 import { AuditAction, EntityType, SaleStatusEnum } from "@prisma/client";
-import { guard } from "@/api/middlewares/guard";
-import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { Hono } from "hono";
+import { z } from "zod";
 
 const sales = new Hono<{ Variables: JWTVariables }>();
 
@@ -34,7 +34,6 @@ sales.get("/", guard("sale.browse", EntityType.Permission), async (c) => {
   return c.json(result);
 });
 
-// TODO: Sales have no employee??
 const createSaleValidationSchema = z.object({
   customerId: z.number().positive(),
   products: z.array(
@@ -44,6 +43,7 @@ const createSaleValidationSchema = z.object({
     })
   ),
   startDate: z.coerce.date(),
+  employeeId: z.number().positive(),
 });
 
 sales.post(
@@ -52,8 +52,13 @@ sales.post(
   zValidator("json", createSaleValidationSchema),
   audit(AuditAction.CREATE, AuditEntityTypes.SALE),
   async (c) => {
-    const { customerId, products, startDate } = c.req.valid("json");
-    const result = await createSale({ customerId, products, startDate });
+    const { customerId, products, startDate, employeeId } = c.req.valid("json");
+    const result = await createSale({
+      customerId,
+      products,
+      startDate,
+      employeeId,
+    });
     return c.json(result);
   }
 );

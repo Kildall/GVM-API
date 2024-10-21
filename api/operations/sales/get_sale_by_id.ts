@@ -21,6 +21,7 @@ async function getSaleById(saleId: number): Promise<GetSaleByIdResponse> {
             product: true,
           },
         },
+        employee: true,
       },
     });
 

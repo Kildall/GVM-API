@@ -17,14 +17,15 @@ const signupValidationSchema = z.object({
   email: z.string().email().max(100),
   password: z.string().min(8).max(256),
   name: z.string().max(256),
+  position: z.string().max(256),
 });
 
 auth.post("/signup", zValidator("json", signupValidationSchema), async (c) => {
   if (c.get("isAuthenticated")) {
     throw new AuthError(ErrorCode.AUTHENTICATED);
   }
-  const { email, name, password } = c.req.valid("json");
-  await signup({ email, name, password });
+  const { email, name, password, position } = c.req.valid("json");
+  await signup({ email, name, password, position });
   return c.json({ message: "user created successfully" });
 });
 

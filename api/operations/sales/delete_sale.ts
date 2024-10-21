@@ -1,6 +1,7 @@
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 interface DeleteSaleResponse {
   message: string;
@@ -14,7 +15,7 @@ async function deleteSale(saleId: number): Promise<DeleteSaleResponse> {
       });
 
       if (!sale) {
-        throw new ParamsError("sale not found");
+        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
       }
 
       // Fetch the sale products before deletion
@@ -39,7 +40,7 @@ async function deleteSale(saleId: number): Promise<DeleteSaleResponse> {
       return { message: "sale deleted successfully" };
     });
   } catch (error) {
-    if (error instanceof ParamsError) {
+    if (error instanceof ResourceError) {
       throw error;
     }
     log.error(error);

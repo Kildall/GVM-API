@@ -1,10 +1,10 @@
 import { prisma } from "@/api/helpers/prisma";
 import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
-import type { Delivery, Sale, DeliveryPerson, Address } from "@prisma/client";
+import type { Address, Delivery, Employee, Sale } from "@prisma/client";
 
 interface GetDeliveryByIdResponse extends Delivery {
   sale: Sale;
-  deliveryPerson: DeliveryPerson | null;
+  employee: Employee | null;
   address: Address;
 }
 
@@ -16,7 +16,7 @@ async function getDeliveryById(
       where: { id: deliveryId },
       include: {
         sale: true,
-        deliveryPerson: true,
+        employee: true,
         address: true,
       },
     });

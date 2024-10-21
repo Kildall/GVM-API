@@ -100,6 +100,7 @@ async function main() {
   const sale1 = await prisma.sale.create({
     data: {
       customerId: customer1.id,
+      employeeId: employee1.id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
       status: "STARTED",
@@ -117,6 +118,7 @@ async function main() {
   const sale2 = await prisma.sale.create({
     data: {
       customerId: customer2.id,
+      employeeId: employee1.id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
       status: "COMPLETED",
@@ -168,26 +170,11 @@ async function main() {
     },
   });
 
-  // Seed DeliveryPerson
-  const deliveryPerson1 = await prisma.deliveryPerson.create({
-    data: {
-      name: "Carlos Gómez",
-      phone: "11-4444-5678",
-    },
-  });
-
-  const deliveryPerson2 = await prisma.deliveryPerson.create({
-    data: {
-      name: "Ana Martínez",
-      phone: "351-666-7890",
-    },
-  });
-
   // Seed Delivery
   await prisma.delivery.create({
     data: {
       saleId: sale1.id,
-      deliveryPersonId: deliveryPerson1.id,
+      employeeId: employee1.id,
       addressId: customer1.addresses[0].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
@@ -199,7 +186,7 @@ async function main() {
   await prisma.delivery.create({
     data: {
       saleId: sale2.id,
-      deliveryPersonId: deliveryPerson2.id,
+      employeeId: employee1.id,
       addressId: customer2.addresses[0].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
@@ -212,22 +199,22 @@ async function main() {
   await prisma.user.create({
     data: {
       email: "pedro.estu1@gmail.com",
-      name: "Pedro",
       password:
         "dc9ebe0f939a0b9907fc3f89d830cf92c46d4d8ee40c814751fcfa3febb77e9b69498f9466dbb6fb7ff5955da006d25355e0eb2f4d8e12e9e6c494ddfdd8d6a1",
       enabled: true,
       verified: true,
+      employeeId: employee1.id,
     },
   });
 
   const user2 = await prisma.user.create({
     data: {
       email: "admin@example.com",
-      name: "Admin User",
       password:
         "dc9ebe0f939a0b9907fc3f89d830cf92c46d4d8ee40c814751fcfa3febb77e9b69498f9466dbb6fb7ff5955da006d25355e0eb2f4d8e12e9e6c494ddfdd8d6a1",
       enabled: true,
       verified: true,
+      employeeId: employee2.id,
     },
   });
 

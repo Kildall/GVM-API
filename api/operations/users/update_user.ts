@@ -1,6 +1,6 @@
 import { hash } from "@/api/helpers/hash";
 import { prisma } from "@/api/helpers/prisma";
-import { ResourceError, ErrorCode } from "@/api/types/errors";
+import { ErrorCode, ResourceError } from "@/api/types/errors";
 
 import type { User } from "@prisma/client";
 
@@ -19,7 +19,6 @@ interface UpdateUserResponse {
 
 async function updateUser({
   userId,
-  name,
   email,
   password,
   enabled,
@@ -50,7 +49,6 @@ async function updateUser({
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
-      name,
       email,
       password: hashedPassword,
       enabled,

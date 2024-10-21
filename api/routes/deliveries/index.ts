@@ -40,7 +40,7 @@ deliveries.get(
 
 const createDeliveryValidationSchema = z.object({
   saleId: z.number().positive(),
-  deliveryPersonId: z.number().positive(),
+  employeeId: z.number().positive(),
   addressId: z.number().positive(),
   startDate: z.coerce.date(),
 });
@@ -51,12 +51,11 @@ deliveries.post(
   zValidator("json", createDeliveryValidationSchema),
   audit(AuditAction.CREATE, AuditEntityTypes.DELIVERY),
   async (c) => {
-    const { saleId, addressId, deliveryPersonId, startDate } =
-      c.req.valid("json");
+    const { saleId, addressId, employeeId, startDate } = c.req.valid("json");
     const result = await createDelivery({
       saleId,
       addressId,
-      deliveryPersonId,
+      employeeId,
       startDate,
     });
     return c.json(result);
@@ -78,7 +77,7 @@ deliveries.delete(
 const updateDeliveryValidationSchema = z.object({
   deliveryId: z.number().positive(),
   addressId: z.number().positive().optional(),
-  deliveryPersonId: z.number().positive().optional(),
+  employeeId: z.number().positive().optional(),
   status: z.nativeEnum(DeliveryStatusEnum).optional(),
 });
 
@@ -88,12 +87,11 @@ deliveries.put(
   zValidator("json", updateDeliveryValidationSchema),
   audit(AuditAction.UPDATE, AuditEntityTypes.DELIVERY),
   async (c) => {
-    const { deliveryId, status, addressId, deliveryPersonId } =
-      c.req.valid("json");
+    const { deliveryId, status, addressId, employeeId } = c.req.valid("json");
     const result = await updateDelivery({
       deliveryId,
       addressId,
-      deliveryPersonId,
+      employeeId,
       status,
     });
     return c.json(result);

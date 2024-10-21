@@ -9,7 +9,7 @@ interface GetUserInfoInput {
 }
 
 interface GetUserInfoResponse {
-  user: Partial<User> & { permissions: string[] };
+  user: Partial<User> & { permissions: string[]; name: string };
 }
 
 async function getUserInfo({
@@ -20,10 +20,14 @@ async function getUserInfo({
     select: {
       id: true,
       email: true,
-      name: true,
       permissions: {
         select: {
-          name: true
+          name: true,
+        },
+      },
+      employee: {
+        select: {
+          name: true,
         },
       },
     },
@@ -33,9 +37,15 @@ async function getUserInfo({
     throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
   }
 
-  const user: GetUserInfoResponse["user"] = {
+  const dbUserWithoutEmployee = {
     ...dbUser,
+    employee: undefined,
+  };
+
+  const user: GetUserInfoResponse["user"] = {
+    ...dbUserWithoutEmployee,
     permissions: (await getUserEntities(id)).map((x) => x.name),
+    name: dbUser.employee?.name ?? "",
   };
 
   return { user };

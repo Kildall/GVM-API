@@ -11,6 +11,7 @@ interface CreateSaleInput {
     productId: number;
     quantity: number;
   }>;
+  employeeId: number;
 }
 
 interface CreateSaleResponse extends Sale {
@@ -21,6 +22,7 @@ async function createSale({
   customerId,
   startDate,
   products,
+  employeeId,
 }: CreateSaleInput): Promise<CreateSaleResponse> {
   try {
     return await prisma.$transaction(async (prisma) => {
@@ -40,6 +42,7 @@ async function createSale({
           status: SaleStatusEnum.STARTED,
           startDate,
           lastUpdateDate: new Date(),
+          employeeId,
           products: {
             create: products.map((product) => ({
               productId: product.productId,

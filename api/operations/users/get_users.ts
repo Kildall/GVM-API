@@ -11,6 +11,7 @@ async function getUsers(): Promise<GetUsersResponse> {
       sessions: true,
       permissions: true,
       signatures: true,
+      employee: true,
     },
   });
 

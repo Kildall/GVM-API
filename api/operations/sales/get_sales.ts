@@ -38,6 +38,7 @@ async function getSales(
             product: true,
           },
         },
+        employee: true,
       },
     });
 

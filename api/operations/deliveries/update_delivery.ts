@@ -4,7 +4,7 @@ import type { Delivery, DeliveryStatusEnum } from "@prisma/client";
 
 interface UpdateDeliveryInput {
   deliveryId: number;
-  deliveryPersonId?: number;
+  employeeId?: number;
   addressId?: number;
   status?: DeliveryStatusEnum;
 }
@@ -14,7 +14,7 @@ interface UpdateDeliveryResponse extends Delivery {}
 async function updateDelivery({
   deliveryId,
   addressId,
-  deliveryPersonId,
+  employeeId,
   status,
 }: UpdateDeliveryInput): Promise<UpdateDeliveryResponse> {
   try {
@@ -23,19 +23,19 @@ async function updateDelivery({
         where: { id: deliveryId },
         data: {
           addressId,
-          deliveryPersonId,
+          employeeId,
           lastUpdateDate: new Date(),
           status: status,
         },
         include: {
           sale: true,
-          deliveryPerson: true,
+          employee: true,
           address: true,
         },
       });
 
       if (status) {
-        await prisma.deliveryPersonDelivery.updateMany({
+        await prisma.employeeDelivery.updateMany({
           where: { deliveryId },
           data: { status },
         });

@@ -10,14 +10,14 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "prisma": "5.20.0"
+    "prisma": "^5.21.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.3.0",
-    "@prisma/client": "5.20.0",
+    "@prisma/client": "^5.21.1",
     "@types/node": "^22.7.2",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
@@ -25,5 +25,8 @@
     "mailersend": "^2.3.0",
     "pino": "^9.4.0",
     "zod": "^3.23.8"
+  },
+  "prisma": {
+    "seed": "bun ./prisma/seed.ts"
   }
 }

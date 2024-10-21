@@ -63,6 +63,7 @@ async function getDashboard(): Promise<DashboardResponse> {
               product: true,
             },
           },
+          employee: true,
         },
       }),
       prisma.delivery.findMany({

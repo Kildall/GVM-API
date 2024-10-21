@@ -3,13 +3,12 @@ import { ServerError } from "@/api/types/errors";
 import {
   BusinessStatusEnum,
   DeliveryStatusEnum,
-  DriverStatusEnum,
   type Delivery,
 } from "@prisma/client";
 
 interface CreateDeliveryInput {
   saleId: number;
-  deliveryPersonId: number;
+  employeeId: number;
   addressId: number;
   startDate: Date;
 }
@@ -18,7 +17,7 @@ interface CreateDeliveryResponse extends Delivery {}
 
 async function createDelivery({
   saleId,
-  deliveryPersonId,
+  employeeId,
   addressId,
   startDate,
 }: CreateDeliveryInput): Promise<CreateDeliveryResponse> {
@@ -26,7 +25,7 @@ async function createDelivery({
     const delivery = await prisma.delivery.create({
       data: {
         saleId,
-        deliveryPersonId,
+        employeeId,
         addressId,
         startDate,
         lastUpdateDate: new Date(),
@@ -35,7 +34,7 @@ async function createDelivery({
       },
       include: {
         sale: true,
-        deliveryPerson: true,
+        employee: true,
         address: true,
       },
     });

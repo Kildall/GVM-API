@@ -1,12 +1,12 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 model Customer {
@@ -16,7 +16,7 @@ model Customer {
   registrationDate DateTime
   enabled          Boolean   @default(true)
   addresses        Address[]
-  sales            Sale[]
+  sales            Sale[]    @relation(name: "SaleCustomer")
 
   @@map("Customer")
 }
@@ -73,29 +73,35 @@ model Supplier {
 }
 
 model Employee {
-  id        Int        @id @default(autoincrement()) @map("EmployeeId")
-  name      String
-  position  String
-  enabled   Boolean    @default(true)
-  purchases Purchase[]
+  id               Int                @id @default(autoincrement()) @map("EmployeeId")
+  name             String             @db.VarChar(256)
+  position         String
+  enabled          Boolean            @default(true)
+  purchases        Purchase[]
+  sales            Sale[]             @relation(name: "SaleEmployee")
+  deliveries       Delivery[]         @relation(name: "EmployeeDelivery")
+  employeeDelivery EmployeeDelivery[]
+
+  user   User? @relation(name: "EmployeeUser")
+  userId Int?  @unique
 
   @@map("Employee")
 }
 
 model Delivery {
-  id                     Int                      @id @default(autoincrement()) @map("DeliveryId")
-  saleId                 Int
-  deliveryPersonId       Int?
-  addressId              Int
-  startDate              DateTime
-  lastUpdateDate         DateTime
-  sale                   Sale                     @relation(fields: [saleId], references: [id])
-  deliveryPerson         DeliveryPerson?          @relation(fields: [deliveryPersonId], references: [id])
-  address                Address                  @relation(fields: [addressId], references: [id])
-  status                 DeliveryStatusEnum
-  businessStatus         BusinessStatusEnum
-  driverStatus           DriverStatusEnum?
-  DeliveryPersonDelivery DeliveryPersonDelivery[]
+  id               Int                @id @default(autoincrement()) @map("DeliveryId")
+  saleId           Int
+  employeeId       Int?
+  addressId        Int
+  startDate        DateTime
+  lastUpdateDate   DateTime
+  sale             Sale               @relation(name: "SaleDelivery", fields: [saleId], references: [id])
+  employee         Employee?          @relation(name: "EmployeeDelivery", fields: [employeeId], references: [id])
+  address          Address            @relation(fields: [addressId], references: [id])
+  status           DeliveryStatusEnum
+  businessStatus   BusinessStatusEnum
+  driverStatus     DriverStatusEnum?
+  employeeDelivery EmployeeDelivery?
 
   @@map("Delivery")
 }
@@ -155,36 +161,28 @@ model ProductSale {
   @@map("ProductSale")
 }
 
-model DeliveryPerson {
-  id               Int                      @id @default(autoincrement()) @map("DeliveryPersonId")
-  name             String
-  phone            String
-  deliveries       DeliveryPersonDelivery[]
-  directDeliveries Delivery[]
+model EmployeeDelivery {
+  employeeId Int
+  deliveryId Int                @unique
+  status     DeliveryStatusEnum
+  employee   Employee           @relation(fields: [employeeId], references: [id])
+  delivery   Delivery           @relation(fields: [deliveryId], references: [id])
 
-  @@map("DeliveryPerson")
-}
-
-model DeliveryPersonDelivery {
-  deliveryPersonId Int
-  deliveryId       Int
-  status           DeliveryStatusEnum
-  deliveryPerson   DeliveryPerson     @relation(fields: [deliveryPersonId], references: [id])
-  delivery         Delivery           @relation(fields: [deliveryId], references: [id])
-
-  @@id([deliveryPersonId, deliveryId])
-  @@map("DeliveryPersonDelivery")
+  @@id([employeeId, deliveryId])
+  @@map("EmployeeDelivery")
 }
 
 model Sale {
   id             Int            @id @default(autoincrement()) @map("SaleId")
   customerId     Int
+  employeeId     Int
   startDate      DateTime
   lastUpdateDate DateTime
-  customer       Customer       @relation(fields: [customerId], references: [id])
+  customer       Customer       @relation(name: "SaleCustomer", fields: [customerId], references: [id])
+  employee       Employee       @relation(name: "SaleEmployee", fields: [employeeId], references: [id])
   status         SaleStatusEnum
   products       ProductSale[]  @relation(name: "Sale_ProductSale")
-  deliveries     Delivery[]
+  deliveries     Delivery[]     @relation(name: "SaleDelivery")
 
   @@map("Sale")
 }
@@ -207,7 +205,6 @@ model Entity {
 
 model User {
   id          Int         @id @default(autoincrement()) @map("UserId")
-  name        String      @db.VarChar(256)
   email       String      @unique @db.VarChar(100)
   password    String      @db.VarChar(256)
   enabled     Boolean     @default(true)
@@ -216,7 +213,9 @@ model User {
   permissions Entity[]    @relation("EntityUser")
   signatures  Signature[]
   audits      Audit[]
-  entityId    Int?
+
+  employee   Employee? @relation(name: "EmployeeUser", fields: [employeeId], references: [id])
+  employeeId Int?      @unique
 
   @@map("User")
 }

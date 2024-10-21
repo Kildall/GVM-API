@@ -20,6 +20,10 @@ async function getUserById(
     sessions: true,
     permissions: true,
     signatures: true,
+    employee: true,
+    sales: true,
+    deliveries: true,
+    purchases: true,
   }
 ): Promise<GetUserByIdResponse> {
   const user = await prisma.user.findUnique({
