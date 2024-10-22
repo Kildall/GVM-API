@@ -2,7 +2,6 @@ import { castToNumberSchema } from "@/api/helpers/validation_schemas";
 import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
 import { guard } from "@/api/middlewares/guard";
-import { deleteEmployee } from "@/api/operations/employees/delete_employee";
 import { getEmployeeById } from "@/api/operations/employees/get_employee_by_id";
 import { getEmployees } from "@/api/operations/employees/get_employees";
 import { updateEmployee } from "@/api/operations/employees/update_employee";
@@ -33,18 +32,6 @@ employees.get(
   guard("employee.browse", EntityType.Permission),
   async (c) => {
     const result = await getEmployees();
-    return c.json(result);
-  }
-);
-
-employees.delete(
-  "/:id",
-  guard("employee.delete", EntityType.Permission),
-  zValidator("param", idParamsValidationSchema),
-  audit(AuditAction.DELETE, AuditEntityTypes.EMPLOYEE),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const result = await deleteEmployee(id);
     return c.json(result);
   }
 );

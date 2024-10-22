@@ -1,14 +1,14 @@
-import { verify } from "hono/jwt";
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { env } from "@/config/env";
 import {
   AuthError,
   ErrorCode,
   ResourceError,
   ServerError,
 } from "@/api/types/errors";
+import { env } from "@/config/env";
+import { verify } from "hono/jwt";
 import type { JWTPayload } from "hono/utils/jwt/types";
-import { log } from "@/api/helpers/pino";
 
 interface VerifyTokenPayload extends JWTPayload {
   id: string;
@@ -37,7 +37,7 @@ async function verifyAccountToken({
     // Check if the signature exists and is valid
     const signature = await prisma.signature.findUnique({
       where: { id: payload.id, ip: null, userAgent: null },
-      include: { User: true },
+      include: { user: true },
     });
 
     if (!signature) {
@@ -55,7 +55,7 @@ async function verifyAccountToken({
     }
 
     // Check if the user exists and is not already verified
-    if (!signature.User || signature.User.verified) {
+    if (!signature.user || signature.user.verified) {
       throw new AuthError(ErrorCode.USER_ERROR);
     }
 

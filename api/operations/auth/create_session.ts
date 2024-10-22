@@ -29,7 +29,7 @@ async function createSession(
       createdAt: now.toDate(),
       expiresAt: now.add(sesionDuration, "days").toDate(),
       active: true,
-      User: {
+      user: {
         connect: {
           id: user.id,
         },
