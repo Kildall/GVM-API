@@ -19,8 +19,13 @@ async function getEntityById({
   const entity = await prisma.entity.findUnique({
     where: { id },
     include: {
-      users: true,
+      users: {
+        include: {
+          employee: true,
+        },
+      },
       roles: true,
+      permissions: true,
     },
   });
 
