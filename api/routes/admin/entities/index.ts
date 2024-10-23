@@ -1,19 +1,19 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { getEntities } from "@/api/operations/entities/get_entities";
-import { getEntityById } from "@/api/operations/entities/get_entity_by_id";
-import { getEntitiesHierarchy } from "@/api/operations/entities/get_entities_hierarchy";
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
 import { addEntityToUser } from "@/api/operations/entities/add_entity_to_user";
-import { AuditAction, EntityType } from "@prisma/client";
 import { createEntity } from "@/api/operations/entities/create_entity";
-import { updateEntity } from "@/api/operations/entities/update_entity";
 import { deleteEntity } from "@/api/operations/entities/delete_entity";
+import { getEntities } from "@/api/operations/entities/get_entities";
+import { getEntitiesHierarchy } from "@/api/operations/entities/get_entities_hierarchy";
+import { getEntityById } from "@/api/operations/entities/get_entity_by_id";
 import { getEntityUsers } from "@/api/operations/entities/get_entity_users";
 import { removeEntityFromUser } from "@/api/operations/entities/remove_entity_from_user";
-import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { updateEntity } from "@/api/operations/entities/update_entity";
+import { zValidator } from "@hono/zod-validator";
+import { AuditAction, EntityType } from "@prisma/client";
+import { Hono } from "hono";
+import { z } from "zod";
 
 const entities = new Hono<{ Variables: JWTVariables }>();
 
@@ -62,7 +62,9 @@ entities.post(
 const validateUpdateEntitySchema = z.object({
   entityId: z.number().positive(),
   name: z.string().min(3).max(256).optional(),
-  childEntityIds: z.array(z.number()).optional(),
+  type: z.nativeEnum(EntityType).optional(),
+  roles: z.array(z.number()).optional(),
+  permissions: z.array(z.number()).optional(),
 });
 
 entities.put(
@@ -70,8 +72,14 @@ entities.put(
   zValidator("json", validateUpdateEntitySchema),
   audit(AuditAction.UPDATE, AuditEntityTypes.ENTITY),
   async (c) => {
-    const { entityId, childEntityIds, name } = c.req.valid("json");
-    const result = await updateEntity({ entityId, childEntityIds, name });
+    const { entityId, type, roles, permissions, name } = c.req.valid("json");
+    const result = await updateEntity({
+      entityId,
+      type,
+      roles,
+      permissions,
+      name,
+    });
     return c.json(result);
   }
 );
