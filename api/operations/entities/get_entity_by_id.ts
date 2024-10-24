@@ -8,8 +8,13 @@ interface GetEntityByIdInput {
 
 interface GetEntityByIdResponse {
   entity: Entity & {
-    users: User[];
+    users: Partial<User>[];
     childEntities: Entity[];
+    _count: {
+      users: number;
+      permissions: number;
+      roles: number;
+    };
   };
 }
 
@@ -20,12 +25,22 @@ async function getEntityById({
     where: { id },
     include: {
       users: {
-        include: {
+        select: {
+          id: true,
+          email: true,
           employee: true,
+          password: false,
         },
       },
       roles: true,
       permissions: true,
+      _count: {
+        select: {
+          users: true,
+          permissions: true,
+          roles: true,
+        },
+      },
     },
   });
 
