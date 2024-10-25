@@ -6,6 +6,8 @@ import type { Entity, EntityType } from "@prisma/client";
 interface CreateEntityInput {
   name: string;
   type: EntityType;
+  permissions: number[];
+  roles: number[];
 }
 
 interface CreateEntityResponse {
@@ -15,6 +17,8 @@ interface CreateEntityResponse {
 async function createEntity({
   name,
   type,
+  permissions,
+  roles,
 }: CreateEntityInput): Promise<CreateEntityResponse> {
   const existingEntity = await prisma.entity.findUnique({
     where: {
@@ -30,6 +34,12 @@ async function createEntity({
     data: {
       name,
       type,
+      permissions: {
+        connect: permissions.map((id) => ({ id })),
+      },
+      roles: {
+        connect: roles.map((id) => ({ id })),
+      },
     },
   });
 

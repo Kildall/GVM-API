@@ -46,6 +46,8 @@ entities.get("/:id/users", zValidator("param", validateIdSchema), async (c) => {
 const validateCreateEntitySchema = z.object({
   name: z.string().min(3).max(256),
   type: z.nativeEnum(EntityType),
+  roles: z.array(z.number()).default([]),
+  permissions: z.array(z.number()).default([]),
 });
 
 entities.post(
@@ -53,8 +55,8 @@ entities.post(
   zValidator("json", validateCreateEntitySchema),
   audit(AuditAction.CREATE, AuditEntityTypes.ENTITY),
   async (c) => {
-    const { name, type } = c.req.valid("json");
-    const result = await createEntity({ name, type });
+    const { name, type, roles, permissions } = c.req.valid("json");
+    const result = await createEntity({ name, type, roles, permissions });
     return c.json(result);
   }
 );
@@ -65,6 +67,7 @@ const validateUpdateEntitySchema = z.object({
   type: z.nativeEnum(EntityType).optional(),
   roles: z.array(z.number()).optional(),
   permissions: z.array(z.number()).optional(),
+  users: z.array(z.number()).optional(),
 });
 
 entities.put(
@@ -72,13 +75,15 @@ entities.put(
   zValidator("json", validateUpdateEntitySchema),
   audit(AuditAction.UPDATE, AuditEntityTypes.ENTITY),
   async (c) => {
-    const { entityId, type, roles, permissions, name } = c.req.valid("json");
+    const { entityId, type, roles, permissions, name, users } =
+      c.req.valid("json");
     const result = await updateEntity({
       entityId,
       type,
       roles,
       permissions,
       name,
+      users,
     });
     return c.json(result);
   }
