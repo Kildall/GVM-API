@@ -9,6 +9,16 @@ async function getProductById(
 ): Promise<GetProductByIdResponse> {
   const product = await prisma.product.findUnique({
     where: { id: productId, enabled: true },
+    include: {
+      purchases: true,
+      sales: true,
+      _count: {
+        select: {
+          purchases: true,
+          sales: true,
+        },
+      },
+    },
   });
 
   if (!product) {

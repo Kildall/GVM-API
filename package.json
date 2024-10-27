@@ -29,6 +29,6 @@
     "zod": "^3.23.8"
   },
   "prisma": {
-    "seed": "bun ./prisma/seed.ts"
+    "seed": "bun ./prisma/seed/index.ts"
   }
 }

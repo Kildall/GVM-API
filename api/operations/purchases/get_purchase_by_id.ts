@@ -31,6 +31,11 @@ async function getPurchaseById(
             product: true,
           },
         },
+        _count: {
+          select: {
+            products: true,
+          },
+        },
       },
     });
 
