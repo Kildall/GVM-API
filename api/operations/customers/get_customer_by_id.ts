@@ -12,6 +12,16 @@ async function getCustomerById(
       id: customerId,
       enabled: true,
     },
+    include: {
+      sales: true,
+      addresses: true,
+      _count: {
+        select: {
+          sales: true,
+          addresses: true,
+        },
+      },
+    },
   });
 
   if (!customer) {

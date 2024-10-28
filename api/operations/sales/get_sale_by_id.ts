@@ -22,6 +22,12 @@ async function getSaleById(saleId: number): Promise<GetSaleByIdResponse> {
           },
         },
         employee: true,
+        deliveries: true,
+        _count: {
+          select: {
+            deliveries: true,
+          },
+        },
       },
     });
 

@@ -25,6 +25,15 @@ async function getAddressesByCustomer(
       customerId: customerId,
       enabled: true,
     },
+    include: {
+      deliveries: true,
+      customer: true,
+      _count: {
+        select: {
+          deliveries: true,
+        },
+      },
+    },
   });
 
   const response: GetAddressesByCustomersResponse = {

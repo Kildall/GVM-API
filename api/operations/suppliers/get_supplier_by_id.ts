@@ -10,6 +10,14 @@ async function getSupplierById(
 ): Promise<GetSupplierByIdResponse> {
   const supplier = await prisma.supplier.findUnique({
     where: { id: supplierId, enabled: true },
+    include: {
+      purchases: true,
+      _count: {
+        select: {
+          purchases: true,
+        },
+      },
+    },
   });
 
   if (!supplier) {
