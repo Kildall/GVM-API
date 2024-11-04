@@ -3,7 +3,6 @@ import { prisma } from "@/api/helpers/prisma";
 import { ServerError } from "@/api/types/errors";
 
 import type { Product } from "@prisma/client";
-import { error } from "console";
 
 interface CreateProductInput {
   name: string;

@@ -1,16 +1,16 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
-import { getPurchaseById } from "@/api/operations/purchases/get_purchase_by_id";
-import { getPurchases } from "@/api/operations/purchases/get_purchases";
+import { guard } from "@/api/middlewares/guard";
 import { createPurchase } from "@/api/operations/purchases/create_purchase";
 import { deletePurchase } from "@/api/operations/purchases/delete_purchase";
+import { getPurchaseById } from "@/api/operations/purchases/get_purchase_by_id";
+import { getPurchases } from "@/api/operations/purchases/get_purchases";
 import { updatePurchase } from "@/api/operations/purchases/update_purchase";
-import { guard } from "@/api/middlewares/guard";
+import { zValidator } from "@hono/zod-validator";
 import { AuditAction, EntityType } from "@prisma/client";
-import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { Hono } from "hono";
+import { z } from "zod";
 
 const purchases = new Hono<{ Variables: JWTVariables }>();
 
@@ -50,7 +50,7 @@ const createPurchaseValidationSchema = z.object({
       quantity: z.number().positive(),
     })
   ),
-  description: z.string().min(3).max(256).default(""),
+  description: z.string().min(3).max(256),
 });
 
 purchases.post(
