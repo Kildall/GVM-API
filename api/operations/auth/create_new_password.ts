@@ -1,7 +1,7 @@
 import { hash } from "@/api/helpers/hash";
 import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ServerError } from "@/api/types/errors";
+import { AuthError, ErrorCode, ServerError } from "@/api/types/errors";
 
 interface ConfirmResetPasswordInput {
   userId: number;
@@ -12,12 +12,24 @@ async function createNewPassword({
   userId,
   newPassword,
 }: ConfirmResetPasswordInput) {
+  if (!userId) {
+    throw new AuthError(ErrorCode.USER_ERROR);
+  }
+
   try {
     const hashedPassword = await hash(newPassword);
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new AuthError(ErrorCode.USER_ERROR);
+    }
+
     await prisma.$transaction(async (prisma) => {
       await prisma.user.update({
-        where: { id: userId },
+        where: { id: user.id },
         data: { password: hashedPassword },
       });
     });
