@@ -20,7 +20,7 @@ async function sendVerificationEmail(user: User, signature: Signature) {
 
     await sendEmail(SUBJECT, [recipient], EMAIL_VERIFICATION_TEMPLATE_ID, {
       email: user.email,
-      confirmation_link: `${env.FRONTEND_URL}/verify-email?signature=${token}`,
+      confirmation_link: `${env.FRONTEND_URL}/activate-account?signature=${token}`,
       name: user.email,
     });
   } catch (error) {
