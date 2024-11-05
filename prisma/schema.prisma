@@ -240,6 +240,7 @@ model Session {
 
 enum AccountAction {
   ACTIVATE
+  RESET_PASSWORD
 }
 
 model Signature {

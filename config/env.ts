@@ -11,8 +11,10 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url(),
   JWT_SECRET: z.string().min(32),
-  MAILERSEND_API_KEY: z.string(),
+  MAILJET_PUBLIC_KEY: z.string(),
+  MAILJET_SECRET_KEY: z.string(),
   PORT: castToNumberSchema,
+  FRONTEND_URL: z.string().url(),
 });
 
 const parseResult = envSchema.safeParse(process.env);

@@ -1,13 +1,18 @@
 import type { JWTVariables } from "@/api/middlewares/auth";
+import { handleSignature } from "@/api/middlewares/signature_action";
+import { activateAccount } from "@/api/operations/auth/activate_account";
+import { createNewPassword } from "@/api/operations/auth/create_new_password";
 import { login } from "@/api/operations/auth/login.ts";
 import { logout } from "@/api/operations/auth/logout";
+import { resetPassword } from "@/api/operations/auth/reset_password";
 import { signup } from "@/api/operations/auth/signup.ts";
-import { verifyAccountToken } from "@/api/operations/auth/verify";
+import { validateSignature } from "@/api/operations/auth/validate_signature";
 import { getUserInfo } from "@/api/operations/users/get_user_info";
 import type { RequestTelemetrics } from "@/api/types/api";
 import { AuthError, ErrorCode } from "@/api/types/errors";
 import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
+import { AccountAction } from "@prisma/client";
+import { Hono, type Context } from "hono";
 import { getConnInfo } from "hono/bun";
 import { z } from "zod";
 
@@ -62,25 +67,83 @@ auth.post("/logout", async (c) => {
 });
 
 const signatureValidationSchema = z.object({
-  signature: z.string().min(16).max(512),
+  signature: z.string(),
 });
 
 auth.get(
-  "/verify/:signature",
-  zValidator("param", signatureValidationSchema),
+  "/verify-signature",
+  zValidator("query", signatureValidationSchema),
   async (c) => {
-    const { signature } = c.req.valid("param");
-    const connInfo = getConnInfo(c);
-    const telemetrics: RequestTelemetrics = {
-      ip: connInfo.remote.address || "Unknown",
-      userAgent: c.req.header("User-Agent") || "Unknown",
-    };
+    const { signature } = c.req.valid("query");
+    try {
+      const result = await validateSignature(signature);
+      return c.json({ valid: result });
+    } catch (error) {
+      return c.json({ valid: false });
+    }
+  }
+);
 
-    const result = await verifyAccountToken({
-      ip: telemetrics.ip,
-      userAgent: telemetrics.userAgent,
-      token: signature,
-    });
+auth.post(
+  "/activate-account",
+  handleSignature(AccountAction.ACTIVATE),
+  async (c: Context<{ Variables: JWTVariables & { userId: number } }>) => {
+    const userId = c.get("userId");
+
+    const result = await activateAccount({ userId });
+
+    return c.json(result);
+  }
+);
+
+const changePasswordValidationSchema = z.object({
+  newPassword: z.string().min(8).max(256),
+});
+
+auth.post(
+  "/reset-password",
+  handleSignature(AccountAction.RESET_PASSWORD),
+  zValidator("json", changePasswordValidationSchema),
+  async (
+    c: Context<
+      {
+        Variables: JWTVariables & { userId: number };
+      },
+      "/reset-password",
+      {
+        in: {
+          json: {
+            newPassword: string;
+          };
+        };
+        out: {
+          json: {
+            newPassword: string;
+          };
+        };
+      }
+    >
+  ) => {
+    const userId = c.get("userId");
+    const { newPassword } = c.req.valid("json");
+
+    const result = await createNewPassword({ userId, newPassword });
+
+    return c.json(result);
+  }
+);
+
+const forgotPasswordValidationSchema = z.object({
+  email: z.string().email().max(100),
+});
+
+auth.post(
+  "/forgot-password",
+  zValidator("json", forgotPasswordValidationSchema),
+  async (c) => {
+    const { email } = c.req.valid("json");
+
+    const result = await resetPassword({ email });
 
     return c.json(result);
   }

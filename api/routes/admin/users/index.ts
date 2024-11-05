@@ -1,15 +1,16 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
+import { resetPassword } from "@/api/operations/auth/reset_password";
 import { createUser } from "@/api/operations/users/create_user";
+import { deleteUser } from "@/api/operations/users/delete_user";
 import { getUserById } from "@/api/operations/users/get_user_by_id";
 import { getUsers } from "@/api/operations/users/get_users";
 import { updateUser } from "@/api/operations/users/update_user";
-import { deleteUser } from "@/api/operations/users/delete_user";
-import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { zValidator } from "@hono/zod-validator";
 import { AuditAction } from "@prisma/client";
+import { Hono } from "hono";
+import { z } from "zod";
 
 const users = new Hono<{ Variables: JWTVariables }>();
 
@@ -88,6 +89,20 @@ users.delete(
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await deleteUser({ id });
+    return c.json(result);
+  }
+);
+
+const validateResetPasswordSchema = z.object({
+  email: z.string().email().max(100),
+});
+
+users.post(
+  "/reset-password",
+  zValidator("json", validateResetPasswordSchema),
+  async (c) => {
+    const { email } = c.req.valid("json");
+    const result = await resetPassword({ email });
     return c.json(result);
   }
 );
