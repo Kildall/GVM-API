@@ -31,11 +31,6 @@ async function validateSignature(signature: string): Promise<boolean> {
     throw new AuthError(ErrorCode.INVALID_TOKEN);
   }
 
-  // Check if the user exists and is not already verified
-  if (!existingSignature.user || existingSignature.user.verified) {
-    throw new AuthError(ErrorCode.USER_ERROR);
-  }
-
   return true;
 }
 

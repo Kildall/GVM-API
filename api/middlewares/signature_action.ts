@@ -60,11 +60,6 @@ const handleSignature = (action: AccountAction) =>
       throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
-    // Check if the user exists and is not already verified
-    if (!signature.user || signature.user.verified) {
-      throw new AuthError(ErrorCode.USER_ERROR);
-    }
-
     c.set("userId", signature.userId);
 
     await next();
