@@ -3,7 +3,7 @@ import { ErrorCode, ResourceError } from "@/api/types/errors";
 import type { Customer } from "@prisma/client";
 
 interface GetCustomersResponse {
-  result: Customer[];
+  customers: Customer[];
 }
 
 async function getCustomers(): Promise<GetCustomersResponse> {
@@ -18,7 +18,7 @@ async function getCustomers(): Promise<GetCustomersResponse> {
   }
 
   const response: GetCustomersResponse = {
-    result: customers,
+    customers,
   };
 
   return response;
