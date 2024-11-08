@@ -12,6 +12,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
+    console.log("🌱 Starting seed...");
+
     // Create base entities
     const customers = await seedCustomers(prisma);
     const suppliers = await seedSuppliers(prisma);

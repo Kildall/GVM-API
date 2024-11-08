@@ -39,6 +39,12 @@ async function getSales(
           },
         },
         employee: true,
+        _count: {
+          select: {
+            products: true,
+            deliveries: true,
+          },
+        },
       },
     });
 
