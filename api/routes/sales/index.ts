@@ -86,6 +86,8 @@ const updateSaleValidationSchema = z.object({
     )
     .optional(),
   status: z.nativeEnum(SaleStatusEnum).optional(),
+  customerId: z.number().positive().optional(),
+  employeeId: z.number().positive().optional(),
 });
 
 sales.put(
@@ -94,11 +96,14 @@ sales.put(
   zValidator("json", updateSaleValidationSchema),
   audit(AuditAction.UPDATE, AuditEntityTypes.SALE),
   async (c) => {
-    const { saleId, products, status } = c.req.valid("json");
+    const { saleId, products, status, customerId, employeeId } =
+      c.req.valid("json");
     const result = await updateSale({
       saleId,
       products,
       status,
+      customerId,
+      employeeId,
     });
     return c.json(result);
   }
