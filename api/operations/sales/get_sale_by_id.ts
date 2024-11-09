@@ -26,6 +26,7 @@ async function getSaleById(saleId: number): Promise<GetSaleByIdResponse> {
         _count: {
           select: {
             deliveries: true,
+            products: true,
           },
         },
       },

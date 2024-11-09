@@ -12,6 +12,7 @@ interface UpdateSaleInput {
     quantity: number;
   }>;
   employeeId?: number;
+  customerId?: number;
 }
 
 interface UpdateSaleResponse extends Sale {
@@ -23,6 +24,7 @@ async function updateSale({
   products,
   status,
   employeeId,
+  customerId,
 }: UpdateSaleInput): Promise<UpdateSaleResponse> {
   try {
     return await prisma.$transaction(async (prisma) => {
@@ -57,6 +59,7 @@ async function updateSale({
           lastUpdateDate: new Date(),
           status,
           employeeId,
+          customerId,
           products: products
             ? {
                 deleteMany: {},
