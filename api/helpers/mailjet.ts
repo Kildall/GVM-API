@@ -1,3 +1,4 @@
+import { log } from "@/api/helpers/pino";
 import { env } from "@/config/env.ts";
 import Mailjet from "node-mailjet";
 
@@ -20,6 +21,7 @@ async function sendEmail(
   templateId: number,
   data: Record<string, unknown>
 ) {
+  log.info({ subject, recipients, templateId, data }, "Sending email");
   const request = mailjet.post("send", { version: "v3.1" }).request({
     Messages: [
       {

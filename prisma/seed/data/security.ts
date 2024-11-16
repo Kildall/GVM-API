@@ -36,7 +36,7 @@ const COMPOUND_ROLES = {
   },
   "employee.role.delivery": {
     description: "Delivery employee role",
-    permissions: ["delivery.browse", "delivery.read"],
+    permissions: ["delivery.browse", "delivery.read", "delivery.edit.status"],
   },
 };
 
@@ -52,6 +52,8 @@ export const seedSecurity = async (prisma: PrismaClient) => {
     "sale",
     "supplier",
   ];
+
+  const specificEntities = ["delivery.edit.status"];
 
   const allPermissions = new Set<string>();
 
@@ -70,6 +72,14 @@ export const seedSecurity = async (prisma: PrismaClient) => {
           name: permission,
           type: EntityType.Permission,
         },
+      })
+    )
+  );
+
+  const specificPermissions = await Promise.all(
+    specificEntities.map((entity) =>
+      prisma.entity.create({
+        data: { name: entity, type: EntityType.Permission },
       })
     )
   );
@@ -119,7 +129,7 @@ export const seedSecurity = async (prisma: PrismaClient) => {
           name: roleName,
           type: EntityType.Role,
           permissions: {
-            connect: createdPermissions
+            connect: [...createdPermissions, ...specificPermissions]
               .filter((p) => roleConfig.permissions.includes(p.name))
               .map((p) => ({ id: p.id })),
           },

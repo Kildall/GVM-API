@@ -2,18 +2,32 @@ import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import { ServerError } from "@/api/types/errors";
 
-import type { Employee } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-interface GetAllProductsResponse {
-  employees: Employee[];
-}
+const postSelect = {
+  id: true,
+  name: true,
+  position: true,
+  user: {
+    select: {
+      email: true,
+    },
+  },
+} satisfies Prisma.EmployeeSelect;
 
-async function getEmployees(): Promise<GetAllProductsResponse> {
+type GetEmployeesResponse = {
+  employees: Prisma.EmployeeGetPayload<{
+    select: typeof postSelect;
+  }>[];
+};
+
+async function getEmployees(): Promise<GetEmployeesResponse> {
   try {
     const employees = await prisma.employee.findMany({
       where: {
         enabled: true,
       },
+      select: postSelect,
     });
     return { employees };
   } catch (error) {

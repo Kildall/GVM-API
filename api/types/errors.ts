@@ -19,6 +19,7 @@ export enum ErrorCode {
   RESOURCE_NOT_FOUND = 2001,
   RESOURCE_ALREADY_EXISTS = 2002,
   RESOURCE_UPDATE_FAILED = 2003,
+  INVALID_STATUS_TRANSITION = 2004,
 
   // Validation errors (3000-3099)
   VALIDATION_ERROR = 3000,
@@ -54,6 +55,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.RESOURCE_NOT_FOUND]: "Resource not found",
   [ErrorCode.RESOURCE_ALREADY_EXISTS]: "Resource already exists",
   [ErrorCode.RESOURCE_UPDATE_FAILED]: "Resource update failed",
+  [ErrorCode.INVALID_STATUS_TRANSITION]: "Invalid status transition",
   [ErrorCode.VALIDATION_ERROR]: "Validation error occurred",
   [ErrorCode.INVALID_PARAMS]: "Invalid parameters",
   [ErrorCode.INSUFFICIENT_INVENTORY]: "Insufficient inventory",

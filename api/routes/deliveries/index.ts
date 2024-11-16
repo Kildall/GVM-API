@@ -7,8 +7,14 @@ import { deleteDelivery } from "@/api/operations/deliveries/delete_delivery";
 import { getDeliveries } from "@/api/operations/deliveries/get_deliveries";
 import { getDeliveryById } from "@/api/operations/deliveries/get_delivery_by_id";
 import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
+import { AuthError, ErrorCode } from "@/api/types/errors";
 import { zValidator } from "@hono/zod-validator";
-import { AuditAction, DeliveryStatusEnum, EntityType } from "@prisma/client";
+import {
+  AuditAction,
+  BusinessStatusEnum,
+  DriverStatusEnum,
+  EntityType,
+} from "@prisma/client";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -40,7 +46,7 @@ deliveries.get(
 
 const createDeliveryValidationSchema = z.object({
   saleId: z.number().positive(),
-  employeeId: z.number().positive(),
+  employeeId: z.number().positive().optional(),
   addressId: z.number().positive(),
   startDate: z.coerce.date(),
 });
@@ -69,7 +75,8 @@ deliveries.delete(
   audit(AuditAction.DELETE, AuditEntityTypes.DELIVERY),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await deleteDelivery(id);
+
+    const result = await deleteDelivery({ deliveryId: id });
     return c.json(result);
   }
 );
@@ -78,7 +85,8 @@ const updateDeliveryValidationSchema = z.object({
   deliveryId: z.number().positive(),
   addressId: z.number().positive().optional(),
   employeeId: z.number().positive().optional(),
-  status: z.nativeEnum(DeliveryStatusEnum).optional(),
+  businessStatus: z.nativeEnum(BusinessStatusEnum).optional(),
+  driverStatus: z.nativeEnum(DriverStatusEnum).optional(),
 });
 
 deliveries.put(
@@ -87,12 +95,14 @@ deliveries.put(
   zValidator("json", updateDeliveryValidationSchema),
   audit(AuditAction.UPDATE, AuditEntityTypes.DELIVERY),
   async (c) => {
-    const { deliveryId, status, addressId, employeeId } = c.req.valid("json");
+    const { deliveryId, businessStatus, driverStatus, addressId, employeeId } =
+      c.req.valid("json");
     const result = await updateDelivery({
       deliveryId,
       addressId,
       employeeId,
-      status,
+      businessStatus,
+      driverStatus,
     });
     return c.json(result);
   }

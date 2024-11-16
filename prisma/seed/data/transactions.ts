@@ -21,7 +21,7 @@ export const seedTransactions = async (
       employeeId: employees[0].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
-      status: SaleStatusEnum.STARTED,
+      status: SaleStatusEnum.IN_PROGRESS,
       products: {
         create: [
           {
@@ -36,7 +36,7 @@ export const seedTransactions = async (
       employeeId: employees[0].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
-      status: SaleStatusEnum.COMPLETED,
+      status: SaleStatusEnum.READY,
       products: {
         create: [
           {

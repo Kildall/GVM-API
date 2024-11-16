@@ -78,14 +78,13 @@ model Supplier {
 }
 
 model Employee {
-  id               Int                @id @default(autoincrement()) @map("EmployeeId")
-  name             String             @db.VarChar(256)
-  position         String
-  enabled          Boolean            @default(true)
-  purchases        Purchase[]
-  sales            Sale[]             @relation(name: "SaleEmployee")
-  deliveries       Delivery[]         @relation(name: "EmployeeDelivery")
-  employeeDelivery EmployeeDelivery[]
+  id         Int        @id @default(autoincrement()) @map("EmployeeId")
+  name       String     @db.VarChar(256)
+  position   String
+  enabled    Boolean    @default(true)
+  purchases  Purchase[]
+  sales      Sale[]     @relation(name: "SaleEmployee")
+  deliveries Delivery[] @relation(name: "EmployeeDelivery")
 
   user   User? @relation(name: "EmployeeUser")
   userId Int?  @unique
@@ -94,51 +93,61 @@ model Employee {
 }
 
 model Delivery {
-  id               Int                @id @default(autoincrement()) @map("DeliveryId")
-  saleId           Int
-  employeeId       Int?
-  addressId        Int
-  startDate        DateTime
-  lastUpdateDate   DateTime
-  sale             Sale               @relation(name: "SaleDelivery", fields: [saleId], references: [id])
-  employee         Employee?          @relation(name: "EmployeeDelivery", fields: [employeeId], references: [id])
-  address          Address            @relation(fields: [addressId], references: [id])
-  status           DeliveryStatusEnum
-  businessStatus   BusinessStatusEnum
-  driverStatus     DriverStatusEnum?
-  employeeDelivery EmployeeDelivery?
+  id             Int                @id @default(autoincrement()) @map("DeliveryId")
+  saleId         Int
+  employeeId     Int?
+  addressId      Int
+  startDate      DateTime
+  lastUpdateDate DateTime
+  sale           Sale               @relation(name: "SaleDelivery", fields: [saleId], references: [id])
+  employee       Employee?          @relation(name: "EmployeeDelivery", fields: [employeeId], references: [id])
+  address        Address            @relation(fields: [addressId], references: [id])
+  status         DeliveryStatusEnum
+  businessStatus BusinessStatusEnum
+  driverStatus   DriverStatusEnum?
 
   @@map("Delivery")
 }
 
 enum DeliveryStatusEnum {
-  PENDING_ASSIGNMENT
+  CREATED
   ASSIGNED
   IN_PROGRESS
-  DELIVERED
-  CANCELED
-  DISPUTED
+  IN_TRANSIT
+  FINISHED
+  CONFLICT
+  CANCELLED
 }
 
 enum BusinessStatusEnum {
-  STARTED
+  PENDING
   IN_PROGRESS
-  COMPLETED
-  CANCELED
+  IN_TRANSIT
+  DELIVERED
+  NOT_DELIVERED
+  IN_RETURN
+  CANCELLED
 }
 
 enum DriverStatusEnum {
-  STARTED
-  IN_PROGRESS
-  COMPLETED
-  CANCELED
+  PENDING_PICKUP
+  PICKING_UP
+  IN_TRANSIT
+  TRYING_DELIVERY
+  DELIVERED
+  NOT_DELIVERED
+  IN_RETURN
+  CANCELLED
 }
 
 enum SaleStatusEnum {
-  STARTED
+  CREATED
   IN_PROGRESS
-  COMPLETED
-  CANCELED
+  PREPARING
+  READY
+  IN_DELIVERY
+  DELIVERED
+  CANCELLED
 }
 
 model Product {
@@ -164,17 +173,6 @@ model ProductSale {
 
   @@id([saleId, productId])
   @@map("ProductSale")
-}
-
-model EmployeeDelivery {
-  employeeId Int
-  deliveryId Int                @unique
-  status     DeliveryStatusEnum
-  employee   Employee           @relation(fields: [employeeId], references: [id])
-  delivery   Delivery           @relation(fields: [deliveryId], references: [id])
-
-  @@id([employeeId, deliveryId])
-  @@map("EmployeeDelivery")
 }
 
 model Sale {

@@ -20,8 +20,8 @@ export const seedDeliveries = async (
       addressId: customerAddresses[0].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
-      status: DeliveryStatusEnum.PENDING_ASSIGNMENT,
-      businessStatus: BusinessStatusEnum.STARTED,
+      status: DeliveryStatusEnum.ASSIGNED,
+      businessStatus: BusinessStatusEnum.PENDING,
     },
     {
       saleId: sales[1].id,
@@ -29,8 +29,8 @@ export const seedDeliveries = async (
       addressId: customerAddresses[1].id,
       startDate: new Date(),
       lastUpdateDate: new Date(),
-      status: DeliveryStatusEnum.DELIVERED,
-      businessStatus: BusinessStatusEnum.COMPLETED,
+      status: DeliveryStatusEnum.FINISHED,
+      businessStatus: BusinessStatusEnum.DELIVERED,
     },
   ];
 

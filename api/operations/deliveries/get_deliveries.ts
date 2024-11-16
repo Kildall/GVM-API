@@ -12,24 +12,13 @@ interface GetAllDeliveriesResponse {
 }
 
 // Example of query options
-interface GetDeliveriesOptions {
-  skip?: number;
-  take?: number;
-  orderBy?: {
-    [key: string]: "asc" | "desc";
-  };
-}
+interface GetDeliveriesOptions {}
 
 async function getDeliveries(
-  options: GetDeliveriesOptions = {}
+  _options: GetDeliveriesOptions = {}
 ): Promise<GetAllDeliveriesResponse> {
   try {
-    const { skip = 0, take = 50, orderBy = { startDate: "desc" } } = options;
-
     const deliveries = await prisma.delivery.findMany({
-      skip,
-      take,
-      orderBy,
       include: {
         sale: true,
         employee: true,
