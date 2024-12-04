@@ -1,26 +1,34 @@
 import { castToNumberSchema } from "@/api/helpers/validation_schemas";
+import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
 import type { JWTVariables } from "@/api/middlewares/auth";
-import { createCustomer } from "@/api/operations/customers/create_customer";
-import { deleteCustomer } from "@/api/operations/customers/delete_customer";
-import { getCustomers } from "@/api/operations/customers/get_customers";
-import { getCustomerById } from "@/api/operations/customers/get_customer_by_id";
-import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
-import { z } from "zod";
-import { getAddressesByCustomer } from "@/api/operations/addresses/get_addresses_by_customer";
-import { getAddresses } from "@/api/operations/addresses/get_addresses";
+import { guard } from "@/api/middlewares/guard";
 import { createAddress } from "@/api/operations/addresses/create_address";
 import { deleteAddress } from "@/api/operations/addresses/delete_address";
+import { getAddressById } from "@/api/operations/addresses/get_address_by_id";
+import { getAddresses } from "@/api/operations/addresses/get_addresses";
+import { getAddressesByCustomer } from "@/api/operations/addresses/get_addresses_by_customer";
 import { updateAddress } from "@/api/operations/addresses/update_address";
-import { guard } from "@/api/middlewares/guard";
+import { zValidator } from "@hono/zod-validator";
 import { AuditAction, EntityType } from "@prisma/client";
-import { audit, AuditEntityTypes } from "@/api/middlewares/audit";
+import { Hono } from "hono";
+import { z } from "zod";
 
 const addresses = new Hono<{ Variables: JWTVariables }>();
 
 const idParamsValidationSchema = z.object({
   id: castToNumberSchema,
 });
+
+addresses.get(
+  "/:id",
+  guard("address.read", EntityType.Permission),
+  zValidator("param", idParamsValidationSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const result = await getAddressById(id);
+    return c.json(result);
+  }
+);
 
 addresses.get(
   "/customer/:id",
