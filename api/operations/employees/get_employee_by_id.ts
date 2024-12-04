@@ -13,7 +13,6 @@ async function getEmployeeById(
       deliveries: true,
       sales: true,
       purchases: true,
-      employeeDelivery: true,
       user: true,
       _count: {
         select: {
