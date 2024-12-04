@@ -2,7 +2,7 @@ import { prisma } from "@/api/helpers/prisma";
 import type { Address } from "@prisma/client";
 
 interface GetAddressesResponse {
-  result: Address[];
+  addresses: Address[];
 }
 
 async function getAddresses(): Promise<GetAddressesResponse> {
@@ -13,7 +13,7 @@ async function getAddresses(): Promise<GetAddressesResponse> {
   });
 
   const response: GetAddressesResponse = {
-    result: addresses,
+    addresses,
   };
 
   return response;
