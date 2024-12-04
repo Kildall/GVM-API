@@ -16,6 +16,11 @@ async function getAddressById(
       include: {
         customer: true,
         deliveries: true,
+        _count: {
+          select: {
+            deliveries: true,
+          },
+        },
       },
     });
 
