@@ -20,6 +20,15 @@ async function deleteCustomer(
       },
     });
 
+    await prisma.address.updateMany({
+      where: {
+        customerId,
+      },
+      data: {
+        enabled: false,
+      },
+    });
+
     if (updatedCustomer.count === 0) {
       throw new ResourceError(ErrorCode.RESOURCE_UPDATE_FAILED);
     }
