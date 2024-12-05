@@ -1,9 +1,9 @@
-import { createMiddleware } from "hono/factory";
-import { jwt as honoJwt, verify } from "hono/jwt";
-import { env } from "@/config/env.ts";
-import { z } from "zod";
 import { prisma } from "@/api/helpers/prisma";
 import { AuthError, ErrorCode } from "@/api/types/errors";
+import { env } from "@/config/env.ts";
+import { createMiddleware } from "hono/factory";
+import { verify } from "hono/jwt";
+import { z } from "zod";
 
 export const jwtValidationSchema = z.object({
   id: z.number().positive(),
@@ -17,16 +17,18 @@ export interface JWTVariables {
   isAuthenticated: boolean;
 }
 
+const publicRoutes = ["/api/shared", "/api/auth"];
+
 const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
   const path = c.req.path;
-  const isAuthRoute = path.startsWith("/api/auth");
+  const isPublicRoute = publicRoutes.includes(path);
 
   // Initialize default values
   c.set("isAuthenticated", false);
 
   const authHeader = c.req.header("Authorization");
   if (!authHeader) {
-    if (!isAuthRoute) {
+    if (!isPublicRoute) {
       throw new AuthError(ErrorCode.MISSING_AUTH);
     }
     return next();
@@ -67,7 +69,7 @@ const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
     }
     c.set("isAuthenticated", true);
   } catch (error) {
-    if (!isAuthRoute) {
+    if (!isPublicRoute) {
       throw new AuthError(ErrorCode.ACCESS_DENIED);
     }
   }
