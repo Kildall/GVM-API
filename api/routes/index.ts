@@ -16,6 +16,7 @@ import { employees } from "@/api/routes/employees";
 import { products } from "@/api/routes/products";
 import { purchases } from "@/api/routes/purchases";
 import { sales } from "@/api/routes/sales";
+import { shared } from "@/api/routes/shared";
 import { suppliers } from "@/api/routes/suppliers";
 import type { APIResponse } from "@/api/types/api.ts";
 import { APIError, type ResponseError } from "@/api/types/errors";
@@ -86,6 +87,7 @@ api.route("/employees", employees);
 api.route("/products", products);
 api.route("/purchases", purchases);
 api.route("/sales", sales);
+api.route("/shared", shared);
 api.route("/suppliers", suppliers);
 
 export { api };
