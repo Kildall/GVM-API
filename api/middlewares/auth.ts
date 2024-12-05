@@ -21,7 +21,7 @@ const publicRoutes = ["/api/shared", "/api/auth"];
 
 const auth = createMiddleware<{ Variables: JWTVariables }>(async (c, next) => {
   const path = c.req.path;
-  const isPublicRoute = publicRoutes.includes(path);
+  const isPublicRoute = publicRoutes.some((route) => path.startsWith(route));
 
   // Initialize default values
   c.set("isAuthenticated", false);
