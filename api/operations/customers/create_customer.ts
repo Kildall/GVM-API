@@ -25,9 +25,8 @@ async function createCustomer({
         addresses: {
           createMany: {
             data: addresses.map((address) => {
-              const newAddress: Omit<Address, "id"> = {
+              const newAddress: Omit<Address, "id" | "customerId"> = {
                 ...address,
-                customerId: customer.id,
                 enabled: true,
               };
               return newAddress;
