@@ -21,11 +21,11 @@ const idParamsValidationSchema = z.object({
 const addressValidationSchema = z.object({
   name: z.string(),
   street1: z.string(),
-  street2: z.string().nullable(),
+  street2: z.string().optional().nullable().default(null),
   postalCode: z.string(),
   city: z.string(),
   state: z.string(),
-  details: z.string().nullable(),
+  details: z.string().optional().nullable().default(null),
   enabled: z.boolean().optional().default(true),
 });
 
