@@ -8,6 +8,11 @@ generator dart {
   output   = "./dart"
 }
 
+generator typescriptInterfaces {
+  provider = "prisma-generator-typescript-interfaces"
+  output   = "./typescript/interfaces.ts"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")

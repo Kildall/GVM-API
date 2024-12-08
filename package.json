@@ -5,13 +5,15 @@
   "scripts": {
     "prisma:generate": "bunx prisma generate --generator client",
     "prisma:dart": "bunx prisma generate --generator dart",
+    "prisma:typescript": "bunx prisma generate --generator typescriptInterfaces",
     "prisma:migrate": "bunx prisma migrate",
     "dev": "bun run --hot server.ts",
     "server": "bun run prisma:generate && bun server.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "prisma": "^5.21.1"
+    "prisma": "^5.21.1",
+    "prisma-generator-typescript-interfaces": "^1.7.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
