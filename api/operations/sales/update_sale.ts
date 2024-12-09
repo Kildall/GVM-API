@@ -1,8 +1,21 @@
 import { prisma } from "@/api/helpers/prisma";
+import { createDelivery } from "@/api/operations/deliveries/create_delivery";
+import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
-import { ErrorCode, ServerError, ValidationError } from "@/api/types/errors";
+import {
+  ErrorCode,
+  ResourceError,
+  ServerError,
+  ValidationError,
+} from "@/api/types/errors";
 
-import type { ProductSale, Sale, SaleStatusEnum } from "@prisma/client";
+import {
+  BusinessStatusEnum,
+  DriverStatusEnum,
+  type ProductSale,
+  type Sale,
+  type SaleStatusEnum,
+} from "@prisma/client";
 
 interface UpdateSaleInput {
   saleId: number;
@@ -10,6 +23,11 @@ interface UpdateSaleInput {
   products?: Array<{
     productId: number;
     quantity: number;
+  }>;
+  deliveries?: Array<{
+    addressId: number;
+    employeeId: number;
+    startDate: Date;
   }>;
   employeeId?: number;
   customerId?: number;
@@ -25,9 +43,21 @@ async function updateSale({
   status,
   employeeId,
   customerId,
+  deliveries,
 }: UpdateSaleInput): Promise<UpdateSaleResponse> {
   try {
     return await prisma.$transaction(async (prisma) => {
+      const sale = await prisma.sale.findUnique({
+        where: { id: saleId },
+        include: {
+          deliveries: true,
+        },
+      });
+
+      if (!sale) {
+        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+      }
+
       // Get the current sale products
       const currentSaleProducts = await prisma.productSale.findMany({
         where: { saleId },
@@ -49,6 +79,62 @@ async function updateSale({
           if (!inventoryCheck || inventoryCheck.quantity < additionalQuantity) {
             throw new ValidationError(ErrorCode.INSUFFICIENT_INVENTORY);
           }
+        }
+      }
+
+      if (deliveries) {
+        // If deliveries where removed then delete them
+
+        if (deliveries.length < sale.deliveries.length) {
+          for (const delivery of sale.deliveries) {
+            if (
+              !deliveries.some(
+                (d) =>
+                  d.employeeId === delivery.employeeId &&
+                  d.addressId === delivery.addressId
+              )
+            ) {
+              await updateDelivery({
+                deliveryId: delivery.id,
+                businessStatus: BusinessStatusEnum.CANCELLED,
+                driverStatus: DriverStatusEnum.CANCELLED,
+              });
+            }
+          }
+        }
+
+        // If deliveries where added then create them
+        for (const delivery of deliveries) {
+          if (
+            sale.deliveries.some(
+              (d) =>
+                d.employeeId === delivery.employeeId &&
+                d.addressId === delivery.addressId
+            )
+          ) {
+            continue;
+          }
+
+          const address = await prisma.address.findUnique({
+            where: { id: delivery.addressId, customerId: sale.customerId },
+          });
+          if (!address) {
+            throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+          }
+
+          const employee = await prisma.employee.findUnique({
+            where: { id: delivery.employeeId },
+          });
+          if (!employee) {
+            throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+          }
+
+          await createDelivery({
+            saleId,
+            employeeId: employee.id,
+            addressId: address.id,
+            startDate: delivery.startDate,
+          });
         }
       }
 
