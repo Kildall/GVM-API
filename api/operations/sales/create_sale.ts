@@ -1,4 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
+import { createDelivery } from "@/api/operations/deliveries/create_delivery";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
 import { ErrorCode, ServerError, ValidationError } from "@/api/types/errors";
 
@@ -11,6 +12,11 @@ interface CreateSaleInput {
     productId: number;
     quantity: number;
   }>;
+  deliveries: Array<{
+    employeeId: number;
+    addressId: number;
+    startDate: Date;
+  }>;
   employeeId: number;
 }
 
@@ -22,6 +28,7 @@ async function createSale({
   customerId,
   startDate,
   products,
+  deliveries,
   employeeId,
 }: CreateSaleInput): Promise<CreateSaleResponse> {
   try {
@@ -39,7 +46,7 @@ async function createSale({
       const createdSale = await prisma.sale.create({
         data: {
           customerId,
-          status: SaleStatusEnum.STARTED,
+          status: SaleStatusEnum.CREATED,
           startDate,
           lastUpdateDate: new Date(),
           employeeId,
@@ -54,6 +61,15 @@ async function createSale({
           products: true,
         },
       });
+
+      for (const delivery of deliveries) {
+        await createDelivery({
+          saleId: createdSale.id,
+          employeeId: delivery.employeeId,
+          addressId: delivery.addressId,
+          startDate: delivery.startDate,
+        });
+      }
 
       // Update inventory for each product
       for (const product of products) {

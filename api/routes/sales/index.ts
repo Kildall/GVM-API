@@ -42,6 +42,13 @@ const createSaleValidationSchema = z.object({
       quantity: z.number().positive(),
     })
   ),
+  deliveries: z.array(
+    z.object({
+      employeeId: z.number().positive(),
+      addressId: z.number().positive(),
+      startDate: z.coerce.date(),
+    })
+  ),
   startDate: z.coerce.date(),
   employeeId: z.number().positive(),
 });
@@ -56,6 +63,7 @@ sales.post(
     const result = await createSale({
       customerId,
       products,
+      deliveries,
       startDate,
       employeeId,
     });
