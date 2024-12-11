@@ -9,6 +9,7 @@ import { sendUpdatedDeliveryEmail } from "@/api/operations/email/send_updated_de
 import { ErrorCode, ResourceError, ServerError } from "@/api/types/errors";
 import {
   DriverStatusEnum,
+  Prisma,
   type BusinessStatusEnum,
   type Delivery,
   type Employee,
@@ -26,106 +27,103 @@ interface UpdateDeliveryInput {
 
 interface UpdateDeliveryResponse extends Delivery {}
 
-async function updateDelivery({
-  deliveryId,
-  employeeId,
-  addressId,
-  businessStatus,
-  driverStatus,
-  startDate,
-}: UpdateDeliveryInput): Promise<UpdateDeliveryResponse> {
+async function updateDelivery(
+  {
+    deliveryId,
+    employeeId,
+    addressId,
+    businessStatus,
+    driverStatus,
+    startDate,
+  }: UpdateDeliveryInput,
+  tx: Prisma.TransactionClient
+): Promise<UpdateDeliveryResponse> {
   try {
-    const updatedDelivery = await prisma.$transaction(async (prisma) => {
-      const delivery = await prisma.delivery.findUnique({
-        where: { id: deliveryId },
-      });
+    const db = tx ?? prisma;
 
-      if (!delivery) {
-        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
-      }
+    const delivery = await db.delivery.findUnique({
+      where: { id: deliveryId },
+    });
 
-      const sale = await prisma.sale.findUnique({
-        where: { id: delivery.saleId },
-        include: {
-          customer: {
-            include: {
-              addresses: true,
-            },
+    if (!delivery) {
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+    }
+
+    const sale = await db.sale.findUnique({
+      where: { id: delivery.saleId },
+      include: {
+        customer: {
+          include: {
+            addresses: true,
           },
         },
+      },
+    });
+
+    if (!sale) {
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+    }
+
+    let employee: (Employee & { user: User | null }) | null = null;
+    if (employeeId) {
+      employee = await db.employee.findUnique({
+        where: { id: employeeId },
+        include: {
+          user: true,
+        },
       });
+    }
 
-      if (!sale) {
-        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
-      }
+    const address = sale.customer.addresses.find(
+      (address) => address.id === addressId
+    );
 
-      let employee: (Employee & { user: User | null }) | null = null;
-      if (employeeId) {
-        employee = await prisma.employee.findUnique({
-          where: { id: employeeId },
-          include: {
-            user: true,
-          },
-        });
-      }
+    if (!address) {
+      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
+    }
 
-      const address = sale.customer.addresses.find(
-        (address) => address.id === addressId
+    const validateBusinessStatus = validateStatusTransition(
+      BUSINESS_ALLOWED_STATUS_TRANSITIONS,
+      delivery.businessStatus,
+      businessStatus
+    );
+
+    if (!validateBusinessStatus.isValid) {
+      throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
+    }
+
+    if (employeeId) {
+      const validateDriverStatus = validateStatusTransition(
+        DRIVER_ALLOWED_STATUS_TRANSITIONS,
+        delivery.driverStatus ?? DriverStatusEnum.PENDING_PICKUP,
+        driverStatus
       );
 
-      if (!address) {
-        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
-      }
-
-      const validateBusinessStatus = validateStatusTransition(
-        BUSINESS_ALLOWED_STATUS_TRANSITIONS,
-        delivery.businessStatus,
-        businessStatus
-      );
-
-      if (!validateBusinessStatus.isValid) {
+      if (!validateDriverStatus.isValid) {
         throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
       }
+    }
 
-      if (employeeId) {
-        const validateDriverStatus = validateStatusTransition(
-          DRIVER_ALLOWED_STATUS_TRANSITIONS,
-          delivery.driverStatus ?? DriverStatusEnum.PENDING_PICKUP,
-          driverStatus
-        );
+    const deliveryStatus = getDeliveryStatus(delivery);
 
-        if (!validateDriverStatus.isValid) {
-          throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
-        }
-      }
-
-      const deliveryStatus = getDeliveryStatus(delivery);
-
-      const updatedDelivery = await prisma.delivery.update({
-        where: { id: deliveryId },
-        data: {
-          employeeId,
-          addressId,
-          businessStatus,
-          driverStatus,
-          status: deliveryStatus,
-          startDate,
-        },
-        include: {
-          address: true,
-        },
-      });
-
-      if (employee && employee.user) {
-        await sendUpdatedDeliveryEmail(
-          employee.user,
-          employee,
-          updatedDelivery
-        );
-      }
-
-      return updatedDelivery;
+    const updatedDelivery = await db.delivery.update({
+      where: { id: deliveryId },
+      data: {
+        employeeId,
+        addressId,
+        businessStatus,
+        driverStatus,
+        status: deliveryStatus,
+        startDate,
+      },
+      include: {
+        address: true,
+      },
     });
+
+    if (employee && employee.user) {
+      await sendUpdatedDeliveryEmail(employee.user, employee, updatedDelivery);
+    }
 
     return updatedDelivery;
   } catch (error) {
