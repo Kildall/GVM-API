@@ -21,6 +21,7 @@ interface UpdateDeliveryInput {
   addressId?: number;
   businessStatus?: BusinessStatusEnum;
   driverStatus?: DriverStatusEnum;
+  startDate?: Date;
 }
 
 interface UpdateDeliveryResponse extends Delivery {}
@@ -31,6 +32,7 @@ async function updateDelivery({
   addressId,
   businessStatus,
   driverStatus,
+  startDate,
 }: UpdateDeliveryInput): Promise<UpdateDeliveryResponse> {
   try {
     const updatedDelivery = await prisma.$transaction(async (prisma) => {
@@ -107,6 +109,7 @@ async function updateDelivery({
           businessStatus,
           driverStatus,
           status: deliveryStatus,
+          startDate,
         },
         include: {
           address: true,
