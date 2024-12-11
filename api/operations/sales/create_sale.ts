@@ -1,3 +1,4 @@
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
 import { createDelivery } from "@/api/operations/deliveries/create_delivery";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
@@ -32,7 +33,7 @@ async function createSale({
   employeeId,
 }: CreateSaleInput): Promise<CreateSaleResponse> {
   try {
-    return await prisma.$transaction(async (prisma) => {
+    const sale = await prisma.$transaction(async (prisma) => {
       for (const product of products) {
         const inventoryCheck = await prisma.product.findUnique({
           where: { id: product.productId },
@@ -61,31 +62,43 @@ async function createSale({
           products: true,
         },
       });
-
-      for (const delivery of deliveries) {
-        await createDelivery({
-          saleId: createdSale.id,
-          employeeId: delivery.employeeId,
-          addressId: delivery.addressId,
-          startDate: delivery.startDate,
-        });
-      }
-
-      // Update inventory for each product
-      for (const product of products) {
-        await updateInventory({
-          productId: product.productId,
-          quantity: product.quantity,
-          isIncrease: false,
-        });
-      }
-
       return createdSale;
     });
+
+    await Promise.all(
+      deliveries.map((delivery) =>
+        createDelivery(
+          {
+            saleId: sale.id,
+            employeeId: delivery.employeeId,
+            addressId: delivery.addressId,
+            startDate: delivery.startDate,
+          },
+          prisma
+        )
+      )
+    );
+
+    // Update inventory for each product
+    await Promise.all(
+      products.map((product) =>
+        updateInventory(
+          {
+            productId: product.productId,
+            quantity: product.quantity,
+            isIncrease: false,
+          },
+          prisma
+        )
+      )
+    );
+
+    return sale;
   } catch (error) {
     if (error instanceof ValidationError) {
       throw error;
     }
+    log.error(error);
     throw new ServerError();
   }
 }
