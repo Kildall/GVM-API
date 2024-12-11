@@ -38,6 +38,11 @@ async function getSales(
             product: true,
           },
         },
+        deliveries: {
+          include: {
+            address: true,
+          },
+        },
         employee: true,
         _count: {
           select: {
