@@ -83,8 +83,7 @@ async function updateSale({
       }
 
       if (deliveries) {
-        // If deliveries where removed then delete them
-
+        // If deliveries were removed then delete them
         if (deliveries.length < sale.deliveries.length) {
           for (const delivery of sale.deliveries) {
             if (
@@ -98,13 +97,34 @@ async function updateSale({
                 deliveryId: delivery.id,
                 businessStatus: BusinessStatusEnum.CANCELLED,
                 driverStatus: DriverStatusEnum.CANCELLED,
-                startDate: delivery.startDate,
               });
             }
           }
         }
 
-        // If deliveries where added then create them
+        // Handle updates to existing deliveries
+        for (const existingDelivery of sale.deliveries) {
+          const matchingDelivery = deliveries.find(
+            (d) =>
+              d.employeeId === existingDelivery.employeeId &&
+              d.addressId === existingDelivery.addressId
+          );
+
+          if (matchingDelivery) {
+            // Check if any fields have changed
+            if (
+              existingDelivery.startDate?.getTime() !==
+              matchingDelivery.startDate?.getTime()
+            ) {
+              await updateDelivery({
+                deliveryId: existingDelivery.id,
+                startDate: matchingDelivery.startDate,
+              });
+            }
+          }
+        }
+
+        // If deliveries were added then create them
         for (const delivery of deliveries) {
           if (
             sale.deliveries.some(
