@@ -59,7 +59,8 @@ sales.post(
   zValidator("json", createSaleValidationSchema),
   audit(AuditAction.CREATE, AuditEntityTypes.SALE),
   async (c) => {
-    const { customerId, products, startDate, employeeId } = c.req.valid("json");
+    const { customerId, products, startDate, employeeId, deliveries } =
+      c.req.valid("json");
     const result = await createSale({
       customerId,
       products,
