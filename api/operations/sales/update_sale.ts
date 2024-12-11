@@ -98,6 +98,7 @@ async function updateSale({
                 deliveryId: delivery.id,
                 businessStatus: BusinessStatusEnum.CANCELLED,
                 driverStatus: DriverStatusEnum.CANCELLED,
+                startDate: delivery.startDate,
               });
             }
           }
