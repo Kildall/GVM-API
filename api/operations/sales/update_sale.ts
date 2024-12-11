@@ -83,68 +83,70 @@ async function updateSale({
       }
 
       if (deliveries) {
+        const saleDeliveries = sale.deliveries;
+        const requestDeliveries = deliveries;
+
+        const removedDeliveries = saleDeliveries.filter(
+          (d) =>
+            !requestDeliveries.some(
+              (d2) =>
+                d2.employeeId === d.employeeId && d2.addressId === d.addressId
+            )
+        );
+
+        const addedDeliveries = requestDeliveries.filter(
+          (d) =>
+            !saleDeliveries.some(
+              (d2) =>
+                d2.employeeId === d.employeeId && d2.addressId === d.addressId
+            )
+        );
+
+        const updatedDeliveries = requestDeliveries.filter((d) =>
+          saleDeliveries.some(
+            (d2) =>
+              d2.employeeId === d.employeeId && d2.addressId === d.addressId
+          )
+        );
+
         // If deliveries were removed then delete them
-        if (deliveries.length < sale.deliveries.length) {
-          for (const delivery of sale.deliveries) {
-            if (
-              !deliveries.some(
-                (d) =>
-                  d.employeeId === delivery.employeeId &&
-                  d.addressId === delivery.addressId
-              )
-            ) {
-              await updateDelivery({
-                deliveryId: delivery.id,
-                businessStatus: BusinessStatusEnum.CANCELLED,
-                driverStatus: DriverStatusEnum.CANCELLED,
-              });
-            }
+        if (removedDeliveries.length > 0) {
+          for (const delivery of removedDeliveries) {
+            await updateDelivery({
+              deliveryId: delivery.id,
+              businessStatus: BusinessStatusEnum.CANCELLED,
+              driverStatus: DriverStatusEnum.CANCELLED,
+            });
           }
         }
 
         // Handle updates to existing deliveries
-        for (const existingDelivery of sale.deliveries) {
-          const matchingDelivery = deliveries.find(
+        for (const updatedDelivery of updatedDeliveries) {
+          const existingDelivery = saleDeliveries.find(
             (d) =>
-              d.employeeId === existingDelivery.employeeId &&
-              d.addressId === existingDelivery.addressId
+              d.employeeId === updatedDelivery.employeeId &&
+              d.addressId === updatedDelivery.addressId
           );
 
-          if (matchingDelivery) {
-            // Check if any fields have changed
-            if (
-              existingDelivery.startDate?.getTime() !==
-              matchingDelivery.startDate?.getTime()
-            ) {
-              await updateDelivery({
-                deliveryId: existingDelivery.id,
-                startDate: matchingDelivery.startDate,
-              });
-            }
+          if (existingDelivery) {
+            await updateDelivery({
+              deliveryId: existingDelivery.id,
+              startDate: updatedDelivery.startDate,
+            });
           }
         }
 
         // If deliveries were added then create them
-        for (const delivery of deliveries) {
-          if (
-            sale.deliveries.some(
-              (d) =>
-                d.employeeId === delivery.employeeId &&
-                d.addressId === delivery.addressId
-            )
-          ) {
-            continue;
-          }
-
+        for (const addedDelivery of addedDeliveries) {
           const address = await prisma.address.findUnique({
-            where: { id: delivery.addressId, customerId: sale.customerId },
+            where: { id: addedDelivery.addressId, customerId: sale.customerId },
           });
           if (!address) {
             throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
           }
 
           const employee = await prisma.employee.findUnique({
-            where: { id: delivery.employeeId },
+            where: { id: addedDelivery.employeeId },
           });
           if (!employee) {
             throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
@@ -154,7 +156,7 @@ async function updateSale({
             saleId,
             employeeId: employee.id,
             addressId: address.id,
-            startDate: delivery.startDate,
+            startDate: addedDelivery.startDate,
           });
         }
       }
