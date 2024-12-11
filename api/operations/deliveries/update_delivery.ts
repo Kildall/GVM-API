@@ -36,10 +36,26 @@ async function updateDelivery(
     driverStatus,
     startDate,
   }: UpdateDeliveryInput,
-  tx: Prisma.TransactionClient
+  tx?: Prisma.TransactionClient
 ): Promise<UpdateDeliveryResponse> {
   try {
     const db = tx ?? prisma;
+
+    if (!tx) {
+      return await prisma.$transaction(async (tx) => {
+        return await updateDelivery(
+          {
+            deliveryId,
+            employeeId,
+            addressId,
+            businessStatus,
+            driverStatus,
+            startDate,
+          },
+          tx
+        );
+      });
+    }
 
     const delivery = await db.delivery.findUnique({
       where: { id: deliveryId },
