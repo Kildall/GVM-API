@@ -104,7 +104,7 @@ model Delivery {
   addressId      Int
   startDate      DateTime
   lastUpdateDate DateTime
-  sale           Sale               @relation(name: "SaleDelivery", fields: [saleId], references: [id])
+  sale           Sale               @relation(name: "SaleDelivery", fields: [saleId], references: [id], onDelete: Cascade)
   employee       Employee?          @relation(name: "EmployeeDelivery", fields: [employeeId], references: [id])
   address        Address            @relation(fields: [addressId], references: [id])
   status         DeliveryStatusEnum
