@@ -1,5 +1,5 @@
 import { prisma } from "@/api/helpers/prisma";
-import { ServerError } from "@/api/types/errors";
+import { ErrorCode, ServerError, ValidationError } from "@/api/types/errors";
 
 import type { Product } from "@prisma/client";
 
@@ -23,12 +23,33 @@ async function updateProduct({
   quantity,
 }: UpdatePurchaseInput): Promise<UpdateProductResponse> {
   try {
-    // TODO: Agregar validacion de montos de estos productos en ventas
+    const salesWithProduct = await prisma.sale.findMany({
+      where: {
+        products: {
+          some: {
+            productId,
+          },
+        },
+      },
+      include: {
+        products: true,
+      },
+    });
+
+    const minimumAmount = salesWithProduct.reduce((acc, sale) => {
+      const product = sale.products.find((p) => p.productId === productId);
+      return acc + (product?.quantity || 0);
+    }, 0);
+
+    if (quantity && quantity < minimumAmount) {
+      throw new ValidationError(ErrorCode.INSUFFICIENT_INVENTORY);
+    }
 
     const product = await prisma.product.update({
       where: { id: productId, enabled: true },
       data: { brand, measure, name, price, quantity },
     });
+
     return product;
   } catch (error) {
     throw new ServerError();
