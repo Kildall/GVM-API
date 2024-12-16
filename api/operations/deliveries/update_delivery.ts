@@ -57,14 +57,17 @@ async function updateDelivery(
       });
     }
 
+    // Fetch the delivery
     const delivery = await db.delivery.findUnique({
       where: { id: deliveryId },
     });
 
+    // If the delivery is not found, we throw an error
     if (!delivery) {
       throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
+    // Fetch the sale to get the customer and addresses
     const sale = await db.sale.findUnique({
       where: { id: delivery.saleId },
       include: {
@@ -76,10 +79,12 @@ async function updateDelivery(
       },
     });
 
+    // If the sale is not found, we throw an error
     if (!sale) {
       throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
+    // If the employeeId is provided, we fetch the employee
     let employee: (Employee & { user: User | null }) | null = null;
     if (employeeId) {
       employee = await db.employee.findUnique({
@@ -90,38 +95,49 @@ async function updateDelivery(
       });
     }
 
-    const address = sale.customer.addresses.find(
-      (address) => address.id === addressId
-    );
-
-    if (!address) {
-      throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
-    }
-
-    const validateBusinessStatus = validateStatusTransition(
-      BUSINESS_ALLOWED_STATUS_TRANSITIONS,
-      delivery.businessStatus,
-      businessStatus
-    );
-
-    if (!validateBusinessStatus.isValid) {
-      throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
-    }
-
-    if (employeeId) {
-      const validateDriverStatus = validateStatusTransition(
-        DRIVER_ALLOWED_STATUS_TRANSITIONS,
-        delivery.driverStatus ?? DriverStatusEnum.PENDING_PICKUP,
-        driverStatus
+    // If the addressId is provided, we fetch the address
+    if (addressId) {
+      const address = sale.customer.addresses.find(
+        (address) => address.id === addressId
       );
 
-      if (!validateDriverStatus.isValid) {
-        throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
+      if (!address) {
+        throw new ResourceError(ErrorCode.RESOURCE_NOT_FOUND);
       }
     }
 
+    if (businessStatus || driverStatus) {
+      // Validate the business status transition
+      if (businessStatus) {
+        const validateBusinessStatus = validateStatusTransition(
+          BUSINESS_ALLOWED_STATUS_TRANSITIONS,
+          delivery.businessStatus,
+          businessStatus
+        );
+
+        if (!validateBusinessStatus.isValid) {
+          throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
+        }
+      }
+
+      // Validate the driver status transition
+      if (driverStatus && (employeeId || delivery.employeeId)) {
+        const validateDriverStatus = validateStatusTransition(
+          DRIVER_ALLOWED_STATUS_TRANSITIONS,
+          delivery.driverStatus ?? DriverStatusEnum.PENDING_PICKUP,
+          driverStatus
+        );
+
+        if (!validateDriverStatus.isValid) {
+          throw new ResourceError(ErrorCode.INVALID_STATUS_TRANSITION);
+        }
+      }
+    }
+
+    // Get the delivery status
     const deliveryStatus = getDeliveryStatus(delivery);
 
+    // Update the delivery
     const updatedDelivery = await db.delivery.update({
       where: { id: deliveryId },
       data: {
@@ -137,10 +153,12 @@ async function updateDelivery(
       },
     });
 
+    // Send the updated delivery email to the new employee
     if (employee && employee.user) {
       await sendUpdatedDeliveryEmail(employee.user, employee, updatedDelivery);
     }
 
+    // Return the updated delivery
     return updatedDelivery;
   } catch (error) {
     if (error instanceof ResourceError) {

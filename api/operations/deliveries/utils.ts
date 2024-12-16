@@ -35,7 +35,6 @@ const DRIVER_ALLOWED_STATUS_TRANSITIONS: Record<
   ],
   [DriverStatusEnum.IN_TRANSIT]: [
     DriverStatusEnum.TRYING_DELIVERY,
-    DriverStatusEnum.NOT_DELIVERED,
     DriverStatusEnum.CANCELLED,
   ],
   [DriverStatusEnum.TRYING_DELIVERY]: [
@@ -51,8 +50,8 @@ const DRIVER_ALLOWED_STATUS_TRANSITIONS: Record<
     DriverStatusEnum.PENDING_PICKUP,
     DriverStatusEnum.CANCELLED,
   ],
-  [DriverStatusEnum.DELIVERED]: [], // Terminal state
-  [DriverStatusEnum.CANCELLED]: [], // Terminal state
+  [DriverStatusEnum.DELIVERED]: [],
+  [DriverStatusEnum.CANCELLED]: [],
 };
 
 const BUSINESS_ALLOWED_STATUS_TRANSITIONS: Record<

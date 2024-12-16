@@ -8,7 +8,8 @@
     "prisma:typescript": "bunx prisma generate --generator typescriptInterfaces",
     "prisma:migrate": "bunx prisma migrate",
     "dev": "bun run --hot server.ts",
-    "server": "bun run prisma:generate && bun server.ts"
+    "server": "bun run prisma:generate && bun server.ts",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest",
