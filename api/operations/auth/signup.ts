@@ -33,9 +33,12 @@ async function signup({ email, password, name, position }: SignupInput) {
       data: {
         email,
         password: hashedPassword,
-        employeeId: employee.id,
+        employee: {
+          connect: { id: employee.id },
+        },
       },
     });
+
 
     const signature = await prisma.signature.create({
       data: {

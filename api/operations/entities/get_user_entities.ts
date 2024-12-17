@@ -68,5 +68,3 @@ async function getUserEntities(userId: number): Promise<Entity[]> {
 }
 
 export { getUserEntities };
-
-console.log(await getUserEntities(4));
