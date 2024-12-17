@@ -19,6 +19,7 @@ const idParamsValidationSchema = z.object({
 });
 
 const addressValidationSchema = z.object({
+  id: castToNumberSchema.optional(),
   name: z.string(),
   street1: z.string(),
   street2: z.string().optional().nullable().default(null),
