@@ -1,6 +1,5 @@
 import { prisma } from "@/api/helpers/prisma.ts";
 import { sendPasswordResetEmail } from "@/api/operations/email/send_password_reset";
-import { AuthError, ErrorCode } from "@/api/types/errors.ts";
 import { AccountAction } from "@prisma/client";
 import dayjs from "dayjs";
 

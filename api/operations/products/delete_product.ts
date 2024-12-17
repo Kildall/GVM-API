@@ -10,7 +10,6 @@ async function deleteProduct(
   productId: number
 ): Promise<DeleteProductResponse> {
   try {
-    // TODO: Agregar validacion de montos de estos productos en ventas
     const deletedProduct = await prisma.product.updateMany({
       where: { id: productId, enabled: true },
       data: {
