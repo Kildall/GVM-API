@@ -9,7 +9,11 @@ interface GetUserInfoInput {
 }
 
 interface GetUserInfoResponse {
-  user: Partial<User> & { permissions: string[]; name: string };
+  user: Partial<User> & {
+    permissions: string[];
+    name: string;
+    employeeId: number | null;
+  };
 }
 
 async function getUserInfo({
@@ -27,6 +31,7 @@ async function getUserInfo({
       },
       employee: {
         select: {
+          id: true,
           name: true,
         },
       },
@@ -46,6 +51,7 @@ async function getUserInfo({
     ...dbUserWithoutEmployee,
     permissions: (await getUserEntities(id)).map((x) => x.name),
     name: dbUser.employee?.name ?? "",
+    employeeId: dbUser.employee?.id ?? null,
   };
 
   return { user };
