@@ -92,16 +92,8 @@ async function getDashboard(): Promise<DashboardResponse> {
           address: true,
         },
       }),
-      prisma.product.findMany({
-        where: {
-          enabled: true,
-        },
-      }),
-      prisma.customer.findMany({
-        where: {
-          enabled: true,
-        },
-      }),
+      prisma.product.findMany(),
+      prisma.customer.findMany(),
     ]);
 
     // Calculate all product statistics
