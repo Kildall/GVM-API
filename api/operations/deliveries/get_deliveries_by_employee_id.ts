@@ -76,9 +76,22 @@ async function getDeliveriesByEmployeeId(
       where: { employeeId: employeeId },
       select: {
         id: true,
+        status: true,
+        businessStatus: true,
+        driverStatus: true,
+        employee: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        employeeId: true,
+        startDate: true,
+        lastUpdateDate: true,
         sale: {
           select: {
             id: true,
+            status: true,
             products: {
               select: {
                 product: {
