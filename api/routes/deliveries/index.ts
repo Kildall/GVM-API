@@ -5,6 +5,7 @@ import { guard } from "@/api/middlewares/guard";
 import { createDelivery } from "@/api/operations/deliveries/create_delivery";
 import { deleteDelivery } from "@/api/operations/deliveries/delete_delivery";
 import { getDeliveries } from "@/api/operations/deliveries/get_deliveries";
+import { getDeliveriesByEmployeeId } from "@/api/operations/deliveries/get_deliveries_by_user_id";
 import { getDeliveryById } from "@/api/operations/deliveries/get_delivery_by_id";
 import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
 import { AuthError, ErrorCode } from "@/api/types/errors";
@@ -31,6 +32,22 @@ deliveries.get(
   async (c) => {
     const { id } = c.req.valid("param");
     const result = await getDeliveryById(id);
+    return c.json(result);
+  }
+);
+
+deliveries.get(
+  "/employee/:id",
+  guard("delivery.browse", EntityType.Permission),
+  zValidator("param", idParamsValidationSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.get("jwtPayload");
+    if (!payload) {
+      throw new AuthError(ErrorCode.ACCESS_DENIED, "Access denied");
+    }
+    const { id: userId } = payload;
+    const result = await getDeliveriesByEmployeeId(id, userId);
     return c.json(result);
   }
 );

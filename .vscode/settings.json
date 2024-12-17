@@ -8,5 +8,6 @@
     "source.fixAll.ts": "always",
     "source.removeUnused.ts": "always",
     "source.sortImports": "always"
-  }
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
