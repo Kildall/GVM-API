@@ -39,6 +39,14 @@ async function signup({ email, password, name, position }: SignupInput) {
       },
     });
 
+    await prisma.employee.update({
+      where: { id: employee.id },
+      data: {
+        user: {
+          connect: { id: user.id },
+        },
+      },
+    });
 
     const signature = await prisma.signature.create({
       data: {
