@@ -71,33 +71,32 @@ async function updateEntity({
   const updateData: Prisma.EntityUpdateInput = {
     ...(name && { name }),
     ...(type && { type }),
-    ...(roles?.length && {
-      roles: {
-        set: roles.map((id) => ({ id })),
-      },
-    }),
-    ...(users?.length && {
-      users: {
-        set: users.map((id) => ({ id })),
-      },
-    }),
-    ...(permissions?.length && {
-      permissions: {
-        set: permissions.map((id) => ({ id })),
-      },
-    }),
   };
+
+  // Handle relationship updates
+  if (roles !== undefined) {
+    updateData.roles = {
+      set: roles?.length ? roles.map((id) => ({ id })) : [],
+    };
+  }
+
+  if (users !== undefined) {
+    updateData.users = {
+      set: users?.length ? users.map((id) => ({ id })) : [],
+    };
+  }
+
+  if (permissions !== undefined) {
+    updateData.permissions = {
+      set: permissions?.length ? permissions.map((id) => ({ id })) : [],
+    };
+  }
 
   // Type validation when updating roles
   if (roles?.length) {
     if (existingEntity.type !== EntityType.Role && !type) {
       updateData.type = EntityType.Role;
     }
-  }
-
-  // Only perform update if there are changes
-  if (Object.keys(updateData).length === 0) {
-    return { entity: existingEntity };
   }
 
   try {

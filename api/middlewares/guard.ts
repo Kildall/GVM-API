@@ -9,64 +9,65 @@ async function hasEntityRecursive(
   entityType: EntityType,
   visitedEntities: Set<number> = new Set()
 ): Promise<boolean> {
-  const user = await prisma.user.findUnique({
+  // Get all user permissions and their nested relationships in a single query
+  const userWithPermissions = await prisma.user.findUnique({
     where: { id: userId },
-    include: { permissions: true },
+    include: {
+      permissions: {
+        include: {
+          permissions: {
+            include: {
+              permissions: true, // Going three levels deep should cover most cases
+            },
+          },
+          roles: {
+            include: {
+              permissions: true,
+              roles: true,
+            },
+          },
+        },
+      },
+    },
   });
 
-  if (!user) return false;
+  if (!userWithPermissions) return false;
 
+  // Helper function to check if an entity matches our target
+  const isTargetEntity = (entity: any): boolean =>
+    entity.name === targetEntityName && entity.type === entityType;
 
-  for (const userEntity of user.permissions) {
-    if (visitedEntities.has(userEntity.id)) {
-      continue; // Skip if we've already visited this entity to prevent infinite loops
-    }
-    visitedEntities.add(userEntity.id);
+  // Helper function to process an entity and its nested structure
+  const processEntity = (entity: any): boolean => {
+    if (!entity || visitedEntities.has(entity.id)) return false;
+    visitedEntities.add(entity.id);
 
-    if (userEntity.name === targetEntityName && userEntity.type === entityType) {
-      return true; // Found the target entity
-    }
+    // Direct match check
+    if (isTargetEntity(entity)) return true;
 
-    // If this is a role, check its permissions
-    if (userEntity.type === EntityType.Role) {
-      const rolePermissions = await prisma.entity.findMany({
-        where: {
-          roles: { some: { id: userEntity.id } },
-          type: EntityType.Permission,
-        },
-      });
+    // Check permissions within this entity
+    if (
+      entity.permissions?.some((permission: any) => {
+        if (visitedEntities.has(permission.id)) return false;
+        return processEntity(permission);
+      })
+    )
+      return true;
 
-      for (const permission of rolePermissions) {
-        if (
-          permission.name === targetEntityName &&
-          entityType === EntityType.Permission
-        ) {
-          return true; // Found the target permission within the role
-        }
-      }
-    }
+    // Check roles within this entity
+    if (
+      entity.roles?.some((role: any) => {
+        if (visitedEntities.has(role.id)) return false;
+        return processEntity(role);
+      })
+    )
+      return true;
 
-    // TODO: Check nested roles
-    // Recursive check for nested entities
-    // const nestedEntities = await prisma.entity.findMany({
-    //   where: { roles: { some: { id: userEntity.entityId } } },
-    // });
+    return false;
+  };
 
-    // for (const nestedEntity of nestedEntities) {
-    //   if (
-    //     await hasEntityRecursive(
-    //       userId,
-    //       targetEntityName,
-    //       entityType,
-    //       visitedEntities
-    //     )
-    //   ) {
-    //     return true;
-    //   }
-    // }
-  }
-
-  return false; // If we've checked everything and haven't returned true, the entity wasn't found
+  // Process all user permissions
+  return userWithPermissions.permissions.some(processEntity);
 }
 
 const guard = (entityName: string, entityType: EntityType) => {
