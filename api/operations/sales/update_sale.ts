@@ -4,15 +4,17 @@ import { createDelivery } from "@/api/operations/deliveries/create_delivery";
 import { updateDelivery } from "@/api/operations/deliveries/update_delivery";
 import { updateInventory } from "@/api/operations/inventory/update_inventory";
 import {
+  APIError,
   ErrorCode,
   ResourceError,
   ServerError,
-  ValidationError,
 } from "@/api/types/errors";
 
 import {
   BusinessStatusEnum,
+  type Delivery,
   DriverStatusEnum,
+  Prisma,
   type ProductSale,
   type Sale,
   SaleStatusEnum,
@@ -37,6 +39,7 @@ interface UpdateSaleInput {
 interface UpdateSaleResponse extends Sale {
   products: ProductSale[];
 }
+
 async function updateSale({
   saleId,
   products,
@@ -58,42 +61,52 @@ async function updateSale({
     }
 
     // Step 3: Handle sale update and inventory in a transaction
-    return await prisma.$transaction(async (tx) => {
-      // Update the sale
-      const updatedSale = await tx.sale.update({
-        where: { id: saleId },
-        data: {
-          lastUpdateDate: new Date(),
-          status,
-          employeeId,
-          customerId,
-          products: products
-            ? {
-                deleteMany: {},
-                create: products.map((product) => ({
-                  productId: product.productId,
-                  quantity: product.quantity,
-                })),
-              }
-            : undefined,
-        },
-        include: {
-          products: true,
-        },
-      });
-
-      // Update inventory if products changed
-      if (products) {
-        await updateInventoryBatch(tx, {
-          currentProducts: initialData.currentSaleProducts,
-          newProducts: products,
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      try {
+        // Update the sale
+        const updatedSale = await tx.sale.update({
+          where: { id: saleId },
+          data: {
+            lastUpdateDate: new Date(),
+            status,
+            employeeId,
+            customerId,
+            products: products
+              ? {
+                  deleteMany: {},
+                  create: products.map((product) => ({
+                    productId: product.productId,
+                    quantity: product.quantity,
+                  })),
+                }
+              : undefined,
+          },
+          include: {
+            products: true,
+          },
         });
-      }
 
-      return updatedSale;
+        // Update inventory if products changed
+        if (products) {
+          await updateInventoryBatch(tx, {
+            currentProducts: initialData.currentSaleProducts,
+            newProducts: products,
+          });
+        }
+
+        return updatedSale;
+      } catch (error) {
+        // Re-throw APIErrors (including ValidationError)
+        if (error instanceof APIError) {
+          throw error;
+        }
+        // Log and wrap other errors
+        log.error(error);
+        throw new ServerError();
+      }
     });
   } catch (error) {
-    if (error instanceof ValidationError) {
+    if (error instanceof APIError) {
       throw error;
     }
     log.error(error);
@@ -123,27 +136,21 @@ async function validateAndFetchInitialData(
   }
 
   if (products) {
-    // Fetch all products inventory in a single query
     const productIds = products.map((p) => p.productId);
     const inventoryData = await prisma.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, quantity: true },
     });
 
-    // Validate inventory
+    // Validate inventory for each product
     for (const product of products) {
       const inventoryCheck = inventoryData.find(
         (p) => p.id === product.productId
       );
-      const currentProductSale = currentSaleProducts.find(
-        (p) => p.productId === product.productId
-      );
-      const additionalQuantity = currentProductSale
-        ? product.quantity - currentProductSale.quantity
-        : product.quantity;
 
-      if (!inventoryCheck || inventoryCheck.quantity < additionalQuantity) {
-        throw new ValidationError(ErrorCode.INSUFFICIENT_INVENTORY);
+      // If no inventory found or requested quantity exceeds available inventory
+      if (!inventoryCheck || product.quantity > inventoryCheck.quantity) {
+        throw new ResourceError(ErrorCode.INSUFFICIENT_INVENTORY);
       }
     }
   }
@@ -159,9 +166,18 @@ async function processDeliveries(
   }>,
   sale: Sale & { deliveries: any[] }
 ) {
+  const deduplicatedDeliveries = requestDeliveries.filter(
+    (delivery, index, self) =>
+      index ===
+      self.findIndex(
+        (t) =>
+          t.addressId === delivery.addressId &&
+          t.employeeId === delivery.employeeId
+      )
+  );
   const { removed, added, updated } = categorizeSaleDeliveries(
     sale.deliveries,
-    requestDeliveries
+    deduplicatedDeliveries
   );
 
   // Process all removals in parallel
@@ -232,7 +248,7 @@ async function processDeliveries(
 }
 
 async function updateInventoryBatch(
-  tx: any,
+  tx: Prisma.TransactionClient,
   {
     currentProducts,
     newProducts,
@@ -269,8 +285,12 @@ async function updateInventoryBatch(
 }
 
 function categorizeSaleDeliveries(
-  existingDeliveries: any[],
-  newDeliveries: any[]
+  existingDeliveries: Delivery[],
+  newDeliveries: Array<{
+    addressId: number;
+    employeeId: number;
+    startDate: Date;
+  }>
 ) {
   return {
     removed: existingDeliveries.filter(
@@ -297,7 +317,7 @@ function categorizeSaleDeliveries(
           (d) =>
             d.employeeId === updatedDelivery.employeeId &&
             d.addressId === updatedDelivery.addressId
-        ),
+        )!,
       })),
   };
 }

@@ -60,7 +60,7 @@ const ACTIVE_DELIVERY_STATUS: DeliveryStatusEnum[] = [
 ];
 
 const ACTIVE_SALES_STATUS: SaleStatusEnum[] = [
-  SaleStatusEnum.STARTED,
+  SaleStatusEnum.CREATED,
   SaleStatusEnum.IN_PROGRESS,
 ];
 
