@@ -13,49 +13,65 @@ import {
   SaleStatusEnum,
 } from "@prisma/client";
 
+interface ProductStats {
+  product: Product;
+  totalQuantitySold: number;
+  totalRevenue: number;
+}
+
+interface CustomerStats {
+  customer: Customer;
+  totalOrders: number;
+  totalSpent: number;
+}
+
+interface DashboardStats {
+  totalSalesAmount: number;
+  totalActiveSales: number;
+  totalActiveDeliveries: number;
+  totalProducts: number;
+  totalCustomers: number;
+  lowStockProducts: number;
+  topSellingProducts: ProductStats[];
+  mostActiveCustomers: CustomerStats[];
+}
+
 interface DashboardResponse {
-  recentSales: (Sale & {
+  stats: DashboardStats;
+  sales: (Sale & {
     customer: Customer;
     products: (ProductSale & {
       product: Product;
     })[];
   })[];
-  recentDeliveries: (Delivery & {
+  deliveries: (Delivery & {
     sale: {
       customer: Customer;
     };
     address: Address;
   })[];
-  totalSalesAmount: number;
-  totalActiveSales: number;
-  totalActiveDeliveries: number;
+  products: Product[];
+  customers: Customer[];
 }
 
 const ACTIVE_DELIVERY_STATUS: DeliveryStatusEnum[] = [
   DeliveryStatusEnum.ASSIGNED,
   DeliveryStatusEnum.IN_PROGRESS,
 ];
+
 const ACTIVE_SALES_STATUS: SaleStatusEnum[] = [
-  SaleStatusEnum.STARTED,
+  SaleStatusEnum.CREATED,
   SaleStatusEnum.IN_PROGRESS,
 ];
 
+const LOW_STOCK_THRESHOLD = 10;
+const TOP_ITEMS_LIMIT = 5;
+
 async function getDashboard(): Promise<DashboardResponse> {
   try {
-    const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-    // Fetch all required data in a single query
-    const [sales, deliveries] = await Promise.all([
+    // Fetch all required data in parallel
+    const [sales, deliveries, products, customers] = await Promise.all([
       prisma.sale.findMany({
-        where: {
-          startDate: {
-            gt: twentyFourHoursAgo,
-          },
-        },
-        orderBy: {
-          startDate: "desc",
-        },
         include: {
           customer: true,
           products: {
@@ -67,14 +83,6 @@ async function getDashboard(): Promise<DashboardResponse> {
         },
       }),
       prisma.delivery.findMany({
-        where: {
-          startDate: {
-            gt: twentyFourHoursAgo,
-          },
-        },
-        orderBy: {
-          startDate: "desc",
-        },
         include: {
           sale: {
             include: {
@@ -84,32 +92,112 @@ async function getDashboard(): Promise<DashboardResponse> {
           address: true,
         },
       }),
+      prisma.product.findMany({
+        where: {
+          enabled: true,
+        },
+      }),
+      prisma.customer.findMany({
+        where: {
+          enabled: true,
+        },
+      }),
     ]);
 
-    // Process sales data
-    const recentSales = sales.slice(0, 3);
-    const totalSalesAmount = sales.reduce((total, sale) => {
-      const saleTotal = sale.products.reduce((saleTotal, productSale) => {
-        return saleTotal + productSale.quantity * productSale.product.price;
-      }, 0);
-      return total + saleTotal;
-    }, 0);
-    const totalActiveSales = sales.filter((sale) =>
-      ACTIVE_SALES_STATUS.includes(sale.status)
-    ).length;
+    // Calculate all product statistics
+    const productSalesMap = new Map<
+      string,
+      { quantitySold: number; revenue: number }
+    >();
+    sales.forEach((sale) => {
+      sale.products.forEach((productSale) => {
+        const existing = productSalesMap.get(
+          productSale.product.id.toString()
+        ) || {
+          quantitySold: 0,
+          revenue: 0,
+        };
+        const saleRevenue = productSale.quantity * productSale.product.price;
+        productSalesMap.set(productSale.product.id.toString(), {
+          quantitySold: existing.quantitySold + productSale.quantity,
+          revenue: existing.revenue + saleRevenue,
+        });
+      });
+    });
 
-    // Process deliveries data
-    const recentDeliveries = deliveries.slice(0, 3);
-    const totalActiveDeliveries = deliveries.filter((delivery) =>
-      ACTIVE_DELIVERY_STATUS.includes(delivery.status)
-    ).length;
+    // Calculate all customer statistics
+    const customerStatsMap = new Map<
+      string,
+      { orders: number; spent: number }
+    >();
+    sales.forEach((sale) => {
+      const existing = customerStatsMap.get(sale.customer.id.toString()) || {
+        orders: 0,
+        spent: 0,
+      };
+      const saleTotal = sale.products.reduce(
+        (total, ps) => total + ps.quantity * ps.product.price,
+        0
+      );
+      customerStatsMap.set(sale.customer.id.toString(), {
+        orders: existing.orders + 1,
+        spent: existing.spent + saleTotal,
+      });
+    });
+
+    // Convert product statistics to sorted array
+    const allProductStats: ProductStats[] = Array.from(
+      productSalesMap.entries()
+    )
+      .map(([productId, stats]) => ({
+        product: products.find((p) => p.id === Number(productId))!,
+        totalQuantitySold: stats.quantitySold,
+        totalRevenue: stats.revenue,
+      }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    // Convert customer statistics to sorted array
+    const allCustomerStats: CustomerStats[] = Array.from(
+      customerStatsMap.entries()
+    )
+      .map(([customerId, stats]) => ({
+        customer: customers.find((c) => c.id === Number(customerId))!,
+        totalOrders: stats.orders,
+        totalSpent: stats.spent,
+      }))
+      .sort((a, b) => b.totalSpent - a.totalSpent);
+
+    // Calculate dashboard statistics
+    const stats: DashboardStats = {
+      totalSalesAmount: sales.reduce((total, sale) => {
+        const saleTotal = sale.products.reduce(
+          (st, ps) => st + ps.quantity * ps.product.price,
+          0
+        );
+        return total + saleTotal;
+      }, 0),
+      totalActiveSales: sales.filter((sale) =>
+        ACTIVE_SALES_STATUS.includes(sale.status)
+      ).length,
+      totalActiveDeliveries: deliveries.filter((delivery) =>
+        ACTIVE_DELIVERY_STATUS.includes(delivery.status)
+      ).length,
+      totalProducts: products.length,
+      totalCustomers: customers.length,
+      lowStockProducts: products.filter(
+        (product) => product.quantity <= LOW_STOCK_THRESHOLD
+      ).length,
+      // Apply limits only when returning the data
+      topSellingProducts: allProductStats.slice(0, TOP_ITEMS_LIMIT),
+      mostActiveCustomers: allCustomerStats.slice(0, TOP_ITEMS_LIMIT),
+    };
 
     return {
-      recentSales,
-      recentDeliveries,
-      totalSalesAmount,
-      totalActiveSales,
-      totalActiveDeliveries,
+      stats,
+      sales,
+      deliveries,
+      products,
+      customers,
     };
   } catch (error) {
     log.error(error);

@@ -4,4 +4,5 @@ node_modules
 out
 prisma/dart
 prisma/typescript
+prisma/dbml
 ngrok*
