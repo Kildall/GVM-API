@@ -1,5 +1,11 @@
+import { log } from "@/api/helpers/pino";
 import { prisma } from "@/api/helpers/prisma";
-import { ErrorCode, ServerError, ValidationError } from "@/api/types/errors";
+import {
+  APIError,
+  ErrorCode,
+  ServerError,
+  ValidationError,
+} from "@/api/types/errors";
 
 import type { Product } from "@prisma/client";
 
@@ -52,6 +58,10 @@ async function updateProduct({
 
     return product;
   } catch (error) {
+    if (error instanceof APIError) {
+      throw error;
+    }
+    log.error(error);
     throw new ServerError();
   }
 }
