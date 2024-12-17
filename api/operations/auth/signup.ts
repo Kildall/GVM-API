@@ -33,18 +33,14 @@ async function signup({ email, password, name, position }: SignupInput) {
       data: {
         email,
         password: hashedPassword,
-        employee: {
-          connect: { id: employee.id },
-        },
+        employeeId: employee.id,
       },
     });
 
     await prisma.employee.update({
       where: { id: employee.id },
       data: {
-        user: {
-          connect: { id: user.id },
-        },
+        userId: user.id
       },
     });
 
