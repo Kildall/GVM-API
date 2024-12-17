@@ -44,7 +44,7 @@ deliveries.get(
     const { id } = c.req.valid("param");
     const payload = c.get("jwtPayload");
     if (!payload) {
-      throw new AuthError(ErrorCode.ACCESS_DENIED, "Access denied");
+      throw new AuthError(ErrorCode.MISSING_AUTH);
     }
     const { id: userId } = payload;
     const result = await getDeliveriesByEmployeeId(id, userId);

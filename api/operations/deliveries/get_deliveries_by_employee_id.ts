@@ -69,7 +69,7 @@ async function getDeliveriesByEmployeeId(
     });
 
     if (!employee) {
-      throw new AuthError(ErrorCode.ACCESS_DENIED);
+      throw new AuthError(ErrorCode.INVALID_TOKEN);
     }
 
     const deliveries = await prisma.delivery.findMany({
