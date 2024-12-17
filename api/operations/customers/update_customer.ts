@@ -85,8 +85,6 @@ async function updateCustomer({
         data.addresses!.createMany = {
           data: addressesToCreate.map((addr) => ({
             ...addr,
-            customerId,
-            enabled: true,
           })),
         };
       }
